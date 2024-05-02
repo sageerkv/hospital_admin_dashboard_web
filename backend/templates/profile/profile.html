@@ -1,0 +1,19 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+{% block Page_Content %}
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-4 px-4">
+        <div  style="display: flex;align-items: center;column-gap: 23px;">
+            <img class="img-xs rounded" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=106&name={{ user.first_name }}&rounded=false&bold=true" alt="Profile image">
+            <h3 class="m-0 font-weight-bold text-primary">{{user.first_name}} {{user.last_name}}</h3>
+        </div>
+    </div>
+    <div class="card-body">
+        fafadfdsgsgdsagasd
+    </div>
+</div>
+
+{% endblock Page_Content %}

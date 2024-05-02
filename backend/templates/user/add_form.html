@@ -1,0 +1,134 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+
+
+{% block Page_Content %}
+<style>
+.bgc-white{
+    padding: 30px;
+    border-radius: 9px;
+    box-shadow: 0px 0px 10px 0 rgba(90, 113, 208, 0.11), 0 4px 16px 0 rgba(167, 175, 183, 0.33);
+    }
+</style>
+
+
+<div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+      <h4 class="card-title">Add User</h4>
+        <form action="" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row">
+  
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">First Name<span class="danger" style="color: red;"> *</span></label>
+                {{form.first_name}}
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+                <div class="form-group">
+                  <label class="form-label">Last Name<span class="danger" style="color: red;"> *</span></label>
+                  {{form.last_name}}
+                </div>
+              </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Email<span class="danger" style="color: red;"> *</span> </label>
+                {{form.email}}
+                {% if form.errors.email %}
+                    <p style="color: red;">{{ form.errors.email.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+                <div class="form-group">
+                  <label class="form-label">Phone Number</label>
+                  {{form.Phone_number}}
+                  {% if form.errors.Phone_number %}
+                      <p style="color: red;">{{ form.errors.Phone_number.0 }}</p>
+                  {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Password<span class="danger" style="color: red;"> *</span> </label>
+                <div class="input-group">
+                  {{form.password1}}
+                  <div class="input-group-append">
+                    <span class="input-group-text">
+                        <i class="fa fa-eye togglepassword" style="color: black;"></i>
+                    </span>
+                  </div>
+                </div>
+                {% if form.errors.password1 %}
+                    <p style="color: red;">{{ form.errors.password1.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Confirm Password<span class="danger" style="color: red;"> *</span> </label>
+                <div class="input-group">
+                  {{ form.password2 }}
+                  <div class="input-group-append">
+                      <span class="input-group-text">
+                          <i class="fa fa-eye togglepassword1" style="color: black;"></i>
+                      </span>
+                  </div>
+                </div>
+                {% if form.errors.password2 %}
+                    <p style="color: red;">{{ form.errors.password2.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+           
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                {{form.role}}
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Type</label>
+                {{form.Type}}
+              </div>
+            </div>
+  
+          </div>
+       
+         <br>
+          <button type="submit" class="btn btn-primary me-2">Submit</button>
+          <button onclick="window.location.href='{% url 'admin' %}'" class="btn btn-light" type="button">Cancel</button>
+        </form>
+      </div>
+    </div>
+</div>
+  
+  
+  <script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM="
+      crossorigin="anonymous"></script>
+  <script>
+    $('.togglepassword').click(function () {
+      $(this).toggleClass("fa-eye-slash");
+      var input = $('#id_password1')
+      if (input.attr('type') == 'password') {
+        input.attr('type', 'text');
+      } else {
+        input.attr('type', 'password');
+      }
+    })
+  
+    $('.togglepassword1').click(function () {
+      $(this).toggleClass("fa-eye-slash");
+      var input = $('#id_password2')
+      if (input.attr('type') == 'password') {
+        input.attr('type', 'text');
+      } else {
+        input.attr('type', 'password');
+      }
+    })
+  </script> 
+{% endblock Page_Content %}

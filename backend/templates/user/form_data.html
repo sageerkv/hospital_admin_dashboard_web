@@ -1,0 +1,59 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+{% block Page_Content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">User Table</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    {% if users %}
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone_number</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone_number</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{user.first_name}} {{user.last_name}}</td>
+                        <td>{{user.Phone_number}}</td>
+                        <td>{{user.email}}</td>
+                        {% if user.role %}
+                        <td>{{user.role}}</td>
+                        {% else %}
+                        <td></td>
+                        {% endif %}
+                        <td>{{user.Type}}</td>
+                        <td><label class="{% if user.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                            {{ user.status }}
+                        </label></td>
+
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <label for="" class="text-primary">No Matches Found</label>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock Page_Content %}
