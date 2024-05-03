@@ -77,10 +77,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     loginAttempts = models.IntegerField(default=0)
     Created_at = models.DateTimeField(auto_now=True)
     Updated_at = models.DateTimeField(auto_now=True)
-    Type = models.CharField(max_length=20, default="Patient", choices=(
-        ('Patient', 'Patient'),
+    Type = models.CharField(max_length=20, default="Staff", choices=(
+        ('Admin', 'Admin'),
+        ('Staff', 'Staff'),
         ('Doctor', 'Doctor')
     ), null=True, blank=True)
+    profile_img = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     
     objects = UserManager()
 

@@ -81,6 +81,24 @@ def user_logout(request):
 def Profile(request):
     return render(request, 'profile/profile.html')
 
+def change_profile_image(request):
+    if request.method == 'POST' and request.FILES.get('profile_img'):
+        profile_img = request.FILES['profile_img']
+        # Save the new profile image to the user's profile
+        request.user.profile_img = profile_img
+        request.user.save()
+        messages.success(request, "Profile image changed successfully.")
+        return JsonResponse({'url': request.user.profile_img.url})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def delete_profile_image(request):
+    if request.method == 'POST':
+        # Delete the profile image associated with the current user
+        request.user.profile_img.delete()
+        messages.success(request, "Profile image deleted successfully.")
+        return JsonResponse({'message': 'Profile image deleted successfully'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
 
 @login_required(login_url="login")
 def index(request):
@@ -144,6 +162,33 @@ def Add_user(request):
             
         return render (request,'user/add_form.html',context)
     
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+    
+    
+@login_required(login_url="login")
+def Edit_user(request,useredit_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'Edit User').has_permission():
+        context=get_menu(request)
+        users=CustomUser.objects.get(id=useredit_id)
+        form=EditUserForm(request.POST or None,instance=users)
+
+        if form.is_valid():
+            update_user=form.save()  
+            messages.success(request,user_edit)
+            return redirect("View_user")
+        
+        form.fields['role'].queryset = Role.objects.filter(status='Active')
+        
+        context['users']=users
+        context['form']=form
+        context['edit']=1
+            
+        return render(request,'user/add_form.html',context)
+
     else:
         messages.error(request,page_deny)
         return redirect("admin")

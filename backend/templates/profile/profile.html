@@ -3,17 +3,219 @@
 
 {% block Page_Content %}
 
-
+<style>
+    .profile-image-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .profile-image {
+        width: 106px;
+        height: auto;
+    }
+    
+    .change-picture-button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 9px;
+    }
+    
+    .profile-image-container:hover .change-picture-button {
+        opacity: 1;
+    }
+    .delete-picture-button {
+        display: flex;
+        position: absolute;
+        top: 15px;
+        left: 123px;
+        color: #4e73df;
+        transition: color 0.3s;
+        cursor: pointer;
+    }
+    
+    .delete-picture-button:hover {
+        color: darkred;
+    }
+    
+    
+</style>
 <div class="card shadow mb-4">
-    <div class="card-header py-4 px-4">
+    <div class="card-header py-4 px-4 d-flex justify-content-between">
         <div  style="display: flex;align-items: center;column-gap: 23px;">
-            <img class="img-xs rounded" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=106&name={{ user.first_name }}&rounded=false&bold=true" alt="Profile image">
+            <div class="profile-image-container">
+                {% if user.profile_img %}
+                    <img class="img-xs rounded profile-image" src="{{ user.profile_img.url }}" alt="Profile image">
+                {% else %}
+                    <img class="img-xs rounded profile-image" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=106&name={{ user.first_name }}&rounded=false&bold=true" alt="Profile image">
+                {% endif %}
+                <input type="file" id="profile-image-input" style="display: none;">
+                <button id="change-picture-button" class="change-picture-button">Change Picture</button>
+            </div>
+            {% if user.profile_img %}
+            <a id="delete-picture-button" class="delete-picture-button"><i class="fas fa-window-close"></i></a>
+            {% endif %}
             <h3 class="m-0 font-weight-bold text-primary">{{user.first_name}} {{user.last_name}}</h3>
         </div>
+        <a href="{% url 'Edit_user' useredit_id=user.id %}" style="font-size: 20px;"><i class="fas fa-edit"></i></a>
     </div>
     <div class="card-body">
-        fafadfdsgsgdsagasd
+        <div class="row">
+            <div class="col-3">
+                Email
+            </div>:
+            <div class="col-8">
+                {{user.email}}
+            </div><br>
+            <div class="col-3">
+                Phone number
+            </div>:
+            <div class="col-8">
+                {% if user.Phone_number %}
+                {{user.Phone_number}}
+                {% endif %} 
+            </div>
+            <div class="col-3">
+                Role
+            </div>:
+            <div class="col-8">
+                {% if user.role %}
+                {{user.role}}
+                {% endif %} 
+            </div>
+            <div class="col-3">
+                Type
+            </div>:
+            <div class="col-8">
+                {% if user.Type %}
+                {{user.Type}}
+                {% endif %} 
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="deletePictureModal" tabindex="-1" aria-labelledby="deletePictureModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deletePictureModalLabel">Confirm Delete</h5>
+          {% comment %} <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> {% endcomment %}
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete your profile picture?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmDeletePicture">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#change-picture-button').click(function() {
+        $('#profile-image-input').click(); // Trigger the file input click event
+    });
+
+    $('#profile-image-input').change(function() {
+        var formData = new FormData();
+        formData.append('profile_img', $(this)[0].files[0]);
+
+        // Get CSRF token from cookie
+        var csrftoken = getCookie('csrftoken');
+
+        $.ajax({
+            url: '/change_profile_image/', // Your Django URL to handle profile image change
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': csrftoken // Include CSRF token in request headers
+            },
+            success: function(response) {
+                $('#profile-image').attr('src', response.url);
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+});
+
+// Function to get CSRF token from cookie
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Check if cookie name matches the CSRF token cookie name
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#delete-picture-button').click(function() {
+            $('#deletePictureModal').modal('show');
+        });
+    
+        $('#confirmDeletePicture').click(function() {
+            $.ajax({
+                url: '/delete_profile_image/', // Your Django URL to handle profile image deletion
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') // Include CSRF token in request headers
+                },
+                success: function(response) {
+                    location.reload(); // Refresh the page after successful deletion
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    
+        // Function to get CSRF token from cookie
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Check if cookie name matches the CSRF token cookie name
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+    
+    
 {% endblock Page_Content %}

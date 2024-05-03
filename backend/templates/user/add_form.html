@@ -16,7 +16,7 @@
 <div class="col-md-12 grid-margin stretch-card">
     <div class="card">
       <div class="card-body">
-      <h4 class="card-title">Add User</h4>
+      <h4 class="card-title">{% if edit %}Edit User{% else %}Add User{% endif %}</h4>
         <form action="" method="POST" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="row">
@@ -51,6 +51,7 @@
                   {% endif %}
                 </div>
             </div>
+            {% if not edit %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">
                 <label class="form-label">Password<span class="danger" style="color: red;"> *</span> </label>
@@ -83,7 +84,7 @@
                 {% endif %}
               </div>
             </div>
-           
+            {% endif %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">
                 <label class="form-label">Role</label>
@@ -96,12 +97,19 @@
                 {{form.Type}}
               </div>
             </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Profile Image</label>
+                {{form.profile_img}}
+                <img id="imagePreview" src="#" alt="Preview" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;">
+              </div>
+            </div>
   
           </div>
        
          <br>
           <button type="submit" class="btn btn-primary me-2">Submit</button>
-          <button onclick="window.location.href='{% url 'admin' %}'" class="btn btn-light" type="button">Cancel</button>
+          <button onclick="window.location.href='{% url 'View_user' %}'" class="btn btn-light" type="button">Cancel</button>
         </form>
       </div>
     </div>
@@ -131,4 +139,25 @@
       }
     })
   </script> 
+  <script>
+    // Function to display image preview
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                $('#imagePreview').attr('src', e.target.result).show();
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Attach event listener to input element for file selection
+    $(document).ready(function() {
+        $('#id_profile_img').change(function() {
+            previewImage(this);
+        });
+    });
+</script>
 {% endblock Page_Content %}
