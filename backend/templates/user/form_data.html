@@ -6,7 +6,7 @@
     <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">User Table</h6>
         <button onclick="window.location.href='{% url 'Add_user' %}'" class="btn btn-primary text-white" type="button">
-            <i class=""></i>Add New User
+            <i class="fa fa-plus"></i> Add User
         </button>
     </div>
     <div class="card-body">
@@ -15,27 +15,32 @@
                 <thead>
                     {% if users %}
                     <tr>
+                        <th>#</th>
                         <th>Name</th>
                         <th>Phone_number</th>
                         <th>Email</th>
                         <th>Role</th>
                         <th>Type</th>
                         <th>Status</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tfoot>
                     <tr>
+                        <th>#</th>
                         <th>Name</th>
                         <th>Phone_number</th>
                         <th>Email</th>
                         <th>Role</th>
                         <th>Type</th>
                         <th>Status</th>
+                        <th></th>
                     </tr>
                 </tfoot>
                 <tbody>
                     {% for user in users %}
                     <tr>
+                        <td>{{forloop.counter}}</td>
                         <td>{{user.first_name}} {{user.last_name}}</td>
                         <td>{{user.Phone_number}}</td>
                         <td>{{user.email}}</td>
@@ -48,7 +53,9 @@
                         <td><label class="{% if user.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
                             {{ user.status }}
                         </label></td>
-
+                        <td><button onclick="window.location.href='{% url 'Edit_user' useredit_id=user.id %}'" class="btn btn-primary text-white" type="button">
+                            <i class="fa fa-edit"></i>
+                        </button></td>
                     </tr>
                     {% endfor %}
                     {% else %}

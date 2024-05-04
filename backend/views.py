@@ -150,7 +150,7 @@ def Add_user(request):
                 new_user=form.save()
                 fnlog(request,new_user.id,'Created_User','','')
                 messages.success(request,user_add)
-                return redirect(index)
+                return redirect("View_user")
             else:
                 print(form.errors)
                 context['form']=form
@@ -172,20 +172,31 @@ def Add_user(request):
 def Edit_user(request,useredit_id):
 
     if request.user.is_superuser or PermisionsOf(request,'Edit User').has_permission():
+        next_url = request.GET.get('next', None)
         context=get_menu(request)
         users=CustomUser.objects.get(id=useredit_id)
         form=EditUserForm(request.POST or None,instance=users)
 
         if form.is_valid():
             update_user=form.save()  
-            messages.success(request,user_edit)
-            return redirect("View_user")
+            
+            if next_url:
+                messages.success(request,profile_edit)
+                return redirect(next_url)  # Redirect to the previous page
+            else:
+                messages.success(request,user_edit)
+                return redirect("View_user")
+            
         
         form.fields['role'].queryset = Role.objects.filter(status='Active')
         
         context['users']=users
         context['form']=form
-        context['edit']=1
+        if next_url:
+            context['next_url']=next_url
+        else:
+            context['edit']=1
+        
             
         return render(request,'user/add_form.html',context)
 

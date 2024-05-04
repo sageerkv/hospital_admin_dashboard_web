@@ -36,14 +36,19 @@
         display: flex;
         position: absolute;
         top: 15px;
-        left: 123px;
-        color: #4e73df;
-        transition: color 0.3s;
+        left: 120px;
         cursor: pointer;
     }
-    
-    .delete-picture-button:hover {
-        color: darkred;
+    .delete-picture-button .fa {
+        background: #4e73df;
+        padding: 2px 4px;
+        border-radius: 50%;
+        color: #fff;
+        transition: color 0.3s;
+        text-decoration: none;
+    }
+    .delete-picture-button:hover .fa{
+        color: #000;
     }
     
     
@@ -61,11 +66,11 @@
                 <button id="change-picture-button" class="change-picture-button">Change Picture</button>
             </div>
             {% if user.profile_img %}
-            <a id="delete-picture-button" class="delete-picture-button"><i class="fas fa-window-close"></i></a>
+            <a id="delete-picture-button" class="delete-picture-button"><i class="fa fa-times"></i></a>
             {% endif %}
             <h3 class="m-0 font-weight-bold text-primary">{{user.first_name}} {{user.last_name}}</h3>
         </div>
-        <a href="{% url 'Edit_user' useredit_id=user.id %}" style="font-size: 20px;"><i class="fas fa-edit"></i></a>
+        <a href="{% url 'Edit_user' useredit_id=user.id %}?next={{ request.path }}" style="font-size: 20px;"><i class="fas fa-edit"></i></a>
     </div>
     <div class="card-body">
         <div class="row">
@@ -109,13 +114,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="deletePictureModalLabel">Confirm Delete</h5>
-          {% comment %} <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> {% endcomment %}
+          <a href="{% url "Profile" %}" class="btn-close"><i class="fa fa-times"></i></a>
         </div>
         <div class="modal-body">
           Are you sure you want to delete your profile picture?
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a href="{% url "Profile" %}" class="btn btn-secondary">Cancel</a>
           <button type="button" class="btn btn-primary" id="confirmDeletePicture">Delete</button>
         </div>
       </div>

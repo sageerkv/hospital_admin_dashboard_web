@@ -15,7 +15,7 @@ EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 class CustomUserForm(UserCreationForm):
     class Meta:
         model=CustomUser
-        fields=('first_name', 'last_name', 'profile_img', 'password1', 'password2','email','role','Type','Phone_number')
+        fields=('first_name', 'last_name', 'profile_img', 'password1', 'password2','email','role','Type','Phone_number', 'status')
         
     def __init__(self, *args, **kwargs):
         super(CustomUserForm, self).__init__(*args, **kwargs)
@@ -43,13 +43,14 @@ class CustomUserForm(UserCreationForm):
 class EditUserForm(UserChangeForm):
     class Meta:
         model=CustomUser
-        fields=('first_name', 'last_name', 'email','role','Type','Phone_number')
+        fields=('first_name', 'last_name','profile_img', 'email','role','Type','Phone_number', 'status')
     
     def __init__(self, *args, **kwargs):
         super(EditUserForm, self).__init__(*args, **kwargs)
         for name in self.fields.keys():
             self.fields[name].widget.attrs.update({'class':'form-control'})
             self.fields['Phone_number'].required = False
+            self.fields['profile_img'].required = False
 
     def save(self,commit=True):
         user=super(EditUserForm,self).save(commit=False)
