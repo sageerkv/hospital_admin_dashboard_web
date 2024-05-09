@@ -20,4 +20,12 @@ urlpatterns = [
     path('User_list/<userview_id>',views.User_list,name="User_list"),
     # password
     path('change_user_password/<user_id>',views.changeuserpassword,name="change_user_password"),
+    
+    # path
+    path('Add_path', views.Add_path, name='Add_path'),
+    path('Edit_path/<pathedit_id>',views.Edit_path,name="Edit_path"),
+    
+    # role
+    path('Add_role', views.Add_role, name='Add_role'),
+    # path('Edit_role/<roleedit_id>',views.Edit_role,name="Edit_role"),
 ]

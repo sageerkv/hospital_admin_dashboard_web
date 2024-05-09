@@ -81,7 +81,9 @@ def user_logout(request):
 def Profile(request):
     logged_in_user = request.user
     user_profiles = CustomUser.objects.exclude(pk=logged_in_user.pk).exclude(is_superuser=True)
-    context={'user_profiles':user_profiles}
+    paths = Path.objects.all().order_by("-Created_at").order_by("-id")
+    roles=Role.objects.all().order_by("-Created_at").order_by("-id").order_by("role")
+    context={'user_profiles':user_profiles, 'paths':paths, 'roles':roles}
     return render(request, 'profile/profile.html',context)
 
 def change_profile_image(request):
@@ -248,3 +250,79 @@ def changeuserpassword(request,user_id):
             return render(request,'user/changeuserpassword.html',{'form':form})
 
     return render(request,'user/changeuserpassword.html',{'form':form})
+
+
+
+@login_required(login_url="login")
+def Add_path(request):
+    if request.user.is_superuser or PermisionsOf(request,'Add Path').has_permission():
+        context=get_menu(request)
+        form=PathForm()
+        form.fields['parent'].queryset = Path.objects.filter(status='Active')
+        context['form']=form
+        if request.method=="POST":
+            form=PathForm(request.POST)
+
+            if form.is_valid():
+                form.save()
+                messages.success(request,path_add)
+                return redirect(Profile)
+            else:
+                context['form']=form
+                return render (request,'path/add_form.html',context)
+                
+        return render(request,'path/add_form.html',context)
+    
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+    
+@login_required(login_url="login")
+def Edit_path(request,pathedit_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'Edit Path').has_permission():
+        context=get_menu(request)
+        paths=Path.objects.get(id=pathedit_id)
+        form=PathForm(request.POST or None,instance=paths)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request,path_edit)
+            return redirect(Profile)
+        
+        form.fields['parent'].queryset = Path.objects.filter(status='Active')
+        context['form']=form
+        context['edit']=1
+            
+        return render(request,'path/add_form.html',context)
+
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+    
+@login_required(login_url="login")
+def Add_role(request):
+    if request.user.is_superuser or PermisionsOf(request,'Add Role').has_permission():
+        context=get_menu(request)
+        form=RoleForm()
+        context['form']=form
+
+        if request.method=="POST":
+            form=RoleForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request,role_add)
+                return redirect(Profile)
+                
+            else:
+                form=RoleForm()
+                context['form']=form
+                return render(request,'role/add_form.html',context)
+                
+        return render(request,'role/add_form.html',context)
+    
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")

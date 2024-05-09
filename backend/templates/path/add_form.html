@@ -1,0 +1,49 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+
+
+{% block Page_Content %}
+<div class="col-md-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">{% if edit %}Edit {% else %}Add{% endif %} Path</h4>
+      {% comment %} <p class="card-description">
+        Path form
+      </p> {% endcomment %}
+      <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Path Name<span class="danger" style="color: red;"> *</span></label>
+              {{form.path_name}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">   
+            <div class="form-group">
+              <label class="form-label">Parent</label>
+              {{form.parent}}
+            </div>
+          </div>
+                    
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">Status<span class="danger" style="color: red;"> *</span></label>
+              {{form.status}}
+            </div>
+          </div>
+
+        </div>
+     
+       <br>
+        <button type="submit" class="btn btn-primary me-2">Submit</button>
+        <button onclick="window.location.href='{% url 'Profile' %}'" class="btn btn-light" type="button">Cancel</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock Page_Content %}

@@ -95,3 +95,26 @@ class ChangeUserPasswordForm(SetPasswordForm):
         if email and not re.match(EMAIL_REGEX, str(email)):
             raise forms.ValidationError("Invalid email format")
         return email
+    
+    
+    
+class PathForm(forms.ModelForm):
+    class Meta:
+        model=Path
+        fields="__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(PathForm, self).__init__(*args, **kwargs)
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({'class':'form-control'})
+            
+            
+class RoleForm(forms.ModelForm):
+    class Meta:
+        model=Role
+        fields="__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(RoleForm, self).__init__(*args, **kwargs)
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({'class':'form-control'})
