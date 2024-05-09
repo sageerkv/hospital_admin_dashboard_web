@@ -79,7 +79,10 @@ def user_logout(request):
 
 @login_required(login_url="login")
 def Profile(request):
-    return render(request, 'profile/profile.html')
+    logged_in_user = request.user
+    user_profiles = CustomUser.objects.exclude(pk=logged_in_user.pk).exclude(is_superuser=True)
+    context={'user_profiles':user_profiles}
+    return render(request, 'profile/profile.html',context)
 
 def change_profile_image(request):
     if request.method == 'POST' and request.FILES.get('profile_img'):
@@ -169,24 +172,43 @@ def Add_user(request):
     
     
 @login_required(login_url="login")
+def User_list(request,userview_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'View User').has_permission():
+        context=get_menu(request)
+        view_user=CustomUser.objects.get(id=userview_id)  
+        
+        context['view_user']=view_user    
+        return render(request,'user/view_user.html',context)
+
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+    
+    
+    
+@login_required(login_url="login")
 def Edit_user(request,useredit_id):
 
     if request.user.is_superuser or PermisionsOf(request,'Edit User').has_permission():
         next_url = request.GET.get('next', None)
+        print('-----------',next_url)
         context=get_menu(request)
         users=CustomUser.objects.get(id=useredit_id)
-        form=EditUserForm(request.POST or None,instance=users)
-
-        if form.is_valid():
-            update_user=form.save()  
+        if request.method == 'POST':
+            form = EditUserForm(request.POST, request.FILES, instance=users)
+            if form.is_valid():
+                form.save()
             
-            if next_url:
-                messages.success(request,profile_edit)
-                return redirect(next_url)  # Redirect to the previous page
-            else:
-                messages.success(request,user_edit)
-                return redirect("View_user")
-            
+                if next_url:
+                    messages.success(request,profile_edit)
+                    return redirect(next_url)  # Redirect to the previous page
+                else:
+                    messages.success(request,user_edit)
+                    return redirect("View_user")
+        else:
+            form = EditUserForm(instance=users)   
         
         form.fields['role'].queryset = Role.objects.filter(status='Active')
         
@@ -203,3 +225,26 @@ def Edit_user(request,useredit_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
+    
+    
+def changeuserpassword(request,user_id):
+    user=CustomUser.objects.get(id=user_id)
+    form=ChangeUserPasswordForm(user)
+    context=get_menu(request)
+    if request.method=="POST":
+        form=ChangeUserPasswordForm(user=user,data=request.POST )
+        print(form)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request,form.user)
+            
+            current_session_key = request.session.session_key
+            Session.objects.filter(expire_date__gte=timezone.now(), session_key=current_session_key).exclude(session_key=current_session_key).delete()
+            
+            messages.success(request,password_change)
+            return redirect("admin")
+        else:
+            print(form.errors)
+            return render(request,'user/changeuserpassword.html',{'form':form})
+
+    return render(request,'user/changeuserpassword.html',{'form':form})

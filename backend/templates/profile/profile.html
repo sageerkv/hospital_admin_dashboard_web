@@ -13,6 +13,10 @@
         width: 106px;
         height: auto;
     }
+    .profile-images {
+        width: 86px;
+        height: auto;
+    }
     
     .change-picture-button {
         position: absolute;
@@ -50,8 +54,67 @@
     .delete-picture-button:hover .fa{
         color: #000;
     }
-    
-    
+    .mobile{
+        display:none;
+    }
+    .grid-mob{
+        display:none;
+    }
+    .dot-active {
+        height: 12px;
+        width: 12px;
+        background-color: #00ff00;
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+        margin-left: -20px;
+        margin-top: 8px;
+      }
+    .dot-inactive {
+        height: 12px;
+        width: 12px;
+        background-color: red;
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+        margin-left: -20px;
+        margin-top: 8px;
+      }
+    @media(max-width: 425px) {
+        .grid-web{
+            display:none;
+        }
+        .grid-mob{
+            display:block;
+        }
+    }
+    @media(max-width: 324px) {
+        .web{
+            display:none;
+        }
+        .mobile{
+            display:block;
+        }
+        .profile-image {
+            width: 86px;
+            height: auto;
+        }
+        .profile-images {
+            width: 66px;
+            height: auto;
+        }
+        .card-body {
+            font-size: 13.8px;
+        }
+        .btn-mobile{
+            display: flex;
+            column-gap: 5px;
+            margin-left: -30px;
+        }
+        .txt-mobile{
+            margin-left: -30px;
+        }
+    }
 </style>
 <div class="card shadow mb-4">
     <div class="card-header py-4 px-4 d-flex justify-content-between">
@@ -62,6 +125,12 @@
                 {% else %}
                     <img class="img-xs rounded profile-image" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=106&name={{ user.first_name }}&rounded=false&bold=true" alt="Profile image">
                 {% endif %}
+                {% if user.status == 'Active' %}
+                <span class="dot-active" title="Status"></span>
+                {% else %}
+                <span class="dot-inactive" title="Status"></span>
+                {% endif %}
+                
                 <input type="file" id="profile-image-input" style="display: none;">
                 <button id="change-picture-button" class="change-picture-button">Change Picture</button>
             </div>
@@ -70,10 +139,14 @@
             {% endif %}
             <h3 class="m-0 font-weight-bold text-primary">{{user.first_name}} {{user.last_name}}</h3>
         </div>
-        <a href="{% url 'Edit_user' useredit_id=user.id %}?next={{ request.path }}" style="font-size: 20px;"><i class="fas fa-edit"></i></a>
+        <div style="display: grid;justify-items: end;">
+            <a href="{% url 'Edit_user' useredit_id=user.id %}?next={{ request.path }}" style="font-size: 20px;"><i class="fas fa-edit"></i></a><br>
+            <a href="{% url 'change_user_password' user_id=user.id %}" class="btn btn-primary grid-web"><i class="fas fa-key"></i> Change Password</a>
+            <a href="{% url 'change_user_password' user_id=user.id %}" class="btn btn-primary grid-mob"><i class="fas fa-key"></i></a>
+        </div>
     </div>
     <div class="card-body">
-        <div class="row">
+        <div class="row font-sizes">
             <div class="col-3">
                 Email
             </div>:
@@ -81,7 +154,7 @@
                 {{user.email}}
             </div><br>
             <div class="col-3">
-                Phone number
+                Phone
             </div>:
             <div class="col-8">
                 {% if user.Phone_number %}
@@ -108,6 +181,58 @@
     </div>
 </div>
 
+<div class="card shadow mb-4">
+    <div class="card-header py-4 px-4">
+        <p>
+            <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+              Doctor And Staff
+            </a>
+          </p>
+          <div class="collapse" id="collapseExample">
+            <h5 class="card-header" style="border: 1px solid #e3e6f0;">Details</h5>
+            <div class="row">
+                {% for user_profile in user_profiles %}
+                <div class="col-sm-4 p-2">
+                    <div class="card">
+                        <div class="card-body" style="display: flex;column-gap: 35px;">
+                            <div>
+                                {% if user_profile.profile_img %}
+                                <img class="img-xs rounded profile-images" src="{{ user_profile.profile_img.url }}" alt="Profile image">
+                                {% else %}
+                                <img class="img-xs rounded profile-images" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=86&name={{ user_profile.first_name }}&rounded=false&bold=true" alt="Profile image">
+                                {% endif %}
+                                {% if user_profile.status == 'Active' %}
+                                <span class="dot-active" title="Status"></span>
+                                {% else %}
+                                <span class="dot-inactive" title="Status"></span>
+                                {% endif %}
+                                <p class="card-text d-flex justify-content-center" style="padding:5px;font-weight: 800;">{{ user_profile.Type }}</p>
+                            </div>
+                            <div class="web">
+                                <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
+                                <p class="card-text">{{ user_profile.Phone_number }}</p>
+                                <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                            </div>
+                            <div class="mobile">
+                                <div class="txt-mobile">
+                                    <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
+                                    <p class="card-text">{{ user_profile.Phone_number }}</p>
+                                </div>
+                                <div class="btn-mobile">
+                                    <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                    <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+              </div>
+          </div>
+    </div>
+</div>
+
 <!-- Modal -->
 <div class="modal fade" id="deletePictureModal" tabindex="-1" aria-labelledby="deletePictureModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -125,7 +250,7 @@
         </div>
       </div>
     </div>
-  </div>
+</div>
 
 
 

@@ -1,0 +1,123 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+
+
+{% block Page_Content %}
+<style>
+    .profile-image-container {
+      position: relative;
+      display: inline-block;
+  }
+  
+  .profile-image {
+      width: 106px;
+      height: auto;
+  }
+  .grid-mob{
+    display:none;
+}
+.grid-web{
+    padding-bottom: 8px !important;
+    margin-block: auto;
+}
+.dot-active {
+    height: 12px;
+    width: 12px;
+    background-color: #00ff00;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 8px;
+  }
+.dot-inactive {
+    height: 12px;
+    width: 12px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 8px;
+  }
+@media(max-width: 425px) {
+    .grid-web{
+        display:none;
+    }
+    .grid-mob{
+        display:block;
+        padding-bottom: 8px !important;
+    margin-block: auto;
+    }
+}
+  @media(max-width: 324px) {
+    .card-body {
+        font-size: 13.8px;
+    }
+}
+</style>
+
+
+<div class="card shadow mb-4">
+  <div class="card-header py-4 px-4 d-flex justify-content-between">
+      <div  style="display: flex;align-items: center;column-gap: 23px;">
+          <div class="profile-image-container">
+                {% if view_user.profile_img %}
+                    <img class="img-xs rounded profile-image" src="{{ view_user.profile_img.url }}" alt="Profile image">
+                {% else %}
+                    <img class="img-xs rounded profile-image" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=106&name={{ view_user.first_name }}&rounded=false&bold=true" alt="Profile image">
+                {% endif %}
+                {% if view_user.status == 'Active' %}
+                <span class="dot-active" title="Status"></span>
+                {% else %}
+                <span class="dot-inactive" title="Status"></span>
+                {% endif %}
+          </div>
+          <h3 class="m-0 font-weight-bold text-primary">{{view_user.first_name}} {{view_user.last_name}}</h3>
+      </div>
+      <div style="display: grid;justify-items: end;">
+        <a href="{% url 'Edit_user' useredit_id=view_user.id %}" style="font-size: 20px;" title="Edit"><i class="fas fa-edit"></i></a>
+        <a href="{% url 'change_user_password' user_id=view_user.id %}" class="btn btn-primary grid-web"><i class="fas fa-key"></i> Change Password</a>
+        <a href="{% url 'change_user_password' user_id=view_user.id %}" class="btn btn-primary grid-mob"><i class="fas fa-key"></i></a>
+    </div>
+  </div>
+  <div class="card-body">
+      <div class="row font-sizes">
+          <div class="col-3">
+              Email
+          </div>:
+          <div class="col-8">
+              {{view_user.email}}
+          </div><br>
+          <div class="col-3">
+              Phone
+          </div>:
+          <div class="col-8">
+              {% if view_user.Phone_number %}
+              {{view_user.Phone_number}}
+              {% endif %} 
+          </div>
+          <div class="col-3">
+              Role
+          </div>:
+          <div class="col-8">
+              {% if view_user.role %}
+              {{view_user.role}}
+              {% endif %} 
+          </div>
+          <div class="col-3">
+              Type
+          </div>:
+          <div class="col-8">
+              {% if view_user.Type %}
+              {{view_user.Type}}
+              {% endif %} 
+          </div>
+      </div>
+  </div>
+</div>
+
+  
+
+{% endblock Page_Content %}

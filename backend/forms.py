@@ -59,3 +59,39 @@ class EditUserForm(UserChangeForm):
         if commit:
             user.save()
             return user
+        
+        
+        
+        
+class ChangeUserPasswordForm(SetPasswordForm):
+    class Meta:
+        model=CustomUser
+        fields=('new_password1','new_password2')
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(ChangeUserPasswordForm, self).__init__(user,*args, **kwargs)
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({'class':'form-control'})
+
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError("Both Passwords doesnt match")
+        return password2
+
+    def save(self,commit=True):
+        user=super(ChangeUserPasswordForm,self).save(commit=False)
+        user.set_password(self.cleaned_data["new_password1"])
+        if commit:
+            user.save()
+            return user
+        
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and not re.match(EMAIL_REGEX, str(email)):
+            raise forms.ValidationError("Invalid email format")
+        return email

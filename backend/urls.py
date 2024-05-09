@@ -17,4 +17,7 @@ urlpatterns = [
     path('View_user', views.View_user, name='View_user'),
     path('Add_user/', views.Add_user, name='Add_user'),
     path('Edit_user/<useredit_id>',views.Edit_user,name="Edit_user"),
+    path('User_list/<userview_id>',views.User_list,name="User_list"),
+    # password
+    path('change_user_password/<user_id>',views.changeuserpassword,name="change_user_password"),
 ]

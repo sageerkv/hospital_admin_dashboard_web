@@ -61,7 +61,7 @@
                   {% endif %}
                 </div>
             </div>
-            {% if not edit %}
+            {% if not next_url and  not edit %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">
                 <label class="form-label">Password<span class="danger" style="color: red;"> *</span> </label>
@@ -107,7 +107,7 @@
                 {{form.Type}}
               </div>
             </div>
-            {% if not next_url and  not edit %}
+            {% if not next_url %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">
                 <label class="form-label">Profile Image</label>
@@ -122,7 +122,6 @@
               <div class="form-group">
                 <label class="form-label">Status</label>
                 {{form.status}}
-                <img id="imagePreview" src="#" alt="Preview" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;">
               </div>
             </div>
             {% endif %}
@@ -130,7 +129,11 @@
        
          <br>
           <button type="submit" class="btn btn-primary me-2">Submit</button>
+          {% if not next_url %}
           <button onclick="window.location.href='{% url 'View_user' %}'" class="btn btn-light" type="button">Cancel</button>
+          {% else %}
+          <button onclick="window.location.href='{% url 'Profile' %}'" class="btn btn-light" type="button">Cancel</button>
+          {% endif %}
         </form>
       </div>
     </div>
