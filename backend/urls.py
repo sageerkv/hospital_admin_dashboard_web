@@ -27,5 +27,6 @@ urlpatterns = [
     
     # role
     path('Add_role', views.Add_role, name='Add_role'),
-    # path('Edit_role/<roleedit_id>',views.Edit_role,name="Edit_role"),
+    path('Edit_role/<roleedit_id>',views.Edit_role,name="Edit_role"),
+    path('Add_permissions/<perm_id>',views.Add_permissions,name="Add_permissions"),
 ]

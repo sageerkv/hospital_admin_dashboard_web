@@ -1,0 +1,127 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+
+
+{% block Page_Content %}
+<div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Permissions</h4>
+        {% comment %} <p class="card-description">
+          Permissions form
+        </p> {% endcomment %}
+        <form action="" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row">
+  
+            <div class="table-responsive">
+              <table class="col-lg-12 table bordered">
+                 
+                  <tbody>
+                    
+                        {% for i in path %}
+                        <tr>
+                            <td style="padding-top:10px ;padding-left: 100px;"><strong>{{ i.path_name}}</strong><input hidden type="text" value="" name="main_path[]"></td>
+                            <td  style="padding-top:10px ;padding-left: 100px;"><input type="checkbox" class="checked1"  name="main_perm" id="cn{{i.id}}"  style="width: 15px;height:15px;" value="{{i.id}}" {% if i.id in permission  %} checked {% endif %} onclick="select_Sub(this)"></td>
+                            
+                        </tr>
+                       
+                        {% for j in i.path_set.all %}
+                        <tr>
+                            <td style="padding-top:10px ;padding-left: 105px;">{{ j.path_name }}</td>
+                            <td  style="padding-top:10px ;padding-left: 100px;"><input type="checkbox" class="cn{{i.id}}" value="{{j.id}}" id="checked" name="sub_perm" style="width: 15px;height:15px;" {% if j.id in permission %}checked{% endif %} onclick="singlecheck(this)"></td>
+                            
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    
+                  </tbody><br>
+                  
+              </table>
+              
+            </div>
+  
+          </div>
+       
+         <br>
+          <button type="submit" class="btn btn-primary me-2">Submit</button>
+          <button onclick="window.location.href='{% url 'Profile' %}'" class="btn btn-light" type="button">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+      var checkBox = document.querySelectorAll('input[type=checkbox]');
+      function myFunction(a) {
+        
+        if(a.checked == true){
+          checkBox.forEach((checkBox) => {
+            checkBox.checked = true;
+          })
+        }
+        else{
+          checkBox.forEach((checkBox) => {
+            checkBox.checked = false;
+          })
+        }
+       
+          
+         
+          
+        }
+  
+  
+        var check = document.querySelectorAll('input[type=checkbox]');
+  
+        function singlecheck(a) {
+        
+          console.log(check.id)
+          if(a.checked == true){
+            check.forEach((check) => {
+            if(a.className == check.id)
+            {
+              check.checked = true;
+            }
+  
+  
+            })
+          }
+        
+          
+        }
+  
+        
+      
+      
+        
+         var check = document.querySelectorAll('input[type=checkbox]');
+         console.log(check)
+         function select_Sub(a){
+          
+          if (a.checked == true){
+            check.forEach((check) => {
+              if(a.id == check.className){
+                check.checked = true;
+              }
+           
+            
+          })
+           
+            }
+            else{
+              check.forEach((check) => {
+                if(a.id == check.className){
+                  check.checked = false;
+                }
+              })
+            }
+           
+          }
+           
+        
+    </script>
+   
+
+{% endblock Page_Content %}

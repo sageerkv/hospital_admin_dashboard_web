@@ -326,3 +326,55 @@ def Add_role(request):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
+    
+
+@login_required(login_url="login")
+def Edit_role(request,roleedit_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'Edit Role').has_permission():
+        context=get_menu(request)
+        roles=Role.objects.get(id=roleedit_id)
+        form=RoleForm(request.POST or None,instance=roles)
+        context['form']=form
+
+        if form.is_valid():
+            form.save()
+            messages.success(request,role_edit)
+            return redirect(Profile)
+            
+        return render(request,'role/add_form.html',context)
+
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+
+    
+    
+@login_required(login_url="login")
+def Add_permissions(request,perm_id):
+    if request.user.is_superuser or PermisionsOf(request,'Set Permissions').has_permission():
+        context=get_menu(request)
+        path=Path.objects.filter(status="Active",parent=None)
+        context['path']=path
+
+        if request.method=="POST":
+            perm=request.POST.getlist('sub_perm')
+            mainperm=request.POST.getlist('main_perm')
+            addperm=Role.objects.get(id=perm_id)
+            addperm.permissions.clear()
+            print( addperm.permissions)
+            for i in perm:
+                addperm.permissions.add(Path.objects.get(id=i))
+            for j in mainperm:
+                addperm.permissions.add(Path.objects.get(id=j))
+            messages.success(request,permission_add)
+            return redirect(Profile)
+
+        permission=[i.id for i in  Role.objects.get(id=perm_id).permissions.all()]
+        print(permission)
+        context['permission']=permission
+
+        return render(request, 'role/add_permission.html', context)
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")

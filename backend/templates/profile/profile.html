@@ -317,7 +317,6 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Role</th>
-                                    <th>Permissions</th>
                                     <th>Status</th>
                                     <th></th>
                                 </tr>
@@ -326,7 +325,6 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Role</th>
-                                    <th>Permissions</th>
                                     <th>Status</th>
                                     <th></th>
                                 </tr>
@@ -336,18 +334,15 @@
                                 <tr>
                                     <td>{{forloop.counter}}</td>
                                     <td>{{role.role}}</td>
-                                    {% if role.permissions %}
-                                    <td>{{role.permissions}}</td>
-                                    {% else %}
-                                    <td></td>
-                                    {% endif %}
                                     <td><label class="{% if role.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
                                         {{ role.status }}
                                     </label></td>
-                                    {% comment %} <td><button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
+                                    <td>
+                                    <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                    <button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
                                         <i class="fa fa-edit"></i>
-                                    </button></td> {% endcomment %}
-                                    
+                                    </button>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                                 {% else %}
