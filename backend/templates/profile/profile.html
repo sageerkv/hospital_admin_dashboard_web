@@ -183,177 +183,561 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-4 px-4">
-        <p>
-            <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Doctor And Staff</a>
-            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permissions</button>
-            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample3" aria-expanded="false" aria-controls="multiCollapseExample3">Role</button>
+        <p> 
+            
+            {% if request.user.is_superuser %}
+                <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Doctor And Staff</a>
+            {% else %}
+                {% for i in request.user.role.permissions.all %}
+                    {% if i.path_name == 'View User' %}
+                        <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Doctor And Staff</a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {% if request.user.is_superuser %}
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permissions</button>
+            {% else %}
+                {% for i in request.user.role.permissions.all %}
+                    {% if i.path_name == 'View Path' %}
+                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permissions</button>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {% if request.user.is_superuser %}
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample3" aria-expanded="false" aria-controls="multiCollapseExample3">Role</button>
+            {% else %}
+                {% for i in request.user.role.permissions.all %}
+                    {% if i.path_name == 'View Role' %}
+                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample3" aria-expanded="false" aria-controls="multiCollapseExample3">Role</button>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
         </p>
 
-        <div class="collapse multi-collapse show" id="multiCollapseExample1">
-            <div class="card-header d-flex justify-content-between" style="border: 1px solid #e3e6f0;align-items: baseline;">
-                <h6 class="m-0 font-weight-bold text-primary">User</h6>
-                <button onclick="window.location.href='{% url 'Add_user' %}'" class="btn btn-primary text-white" type="button">
-                    <i class="fa fa-plus"></i> Add
-                </button>
-            </div>
-            {% if user_profiles %}
-            <div class="row">
-                {% for user_profile in user_profiles %}
-                <div class="col-sm-4 p-2">
-                    <div class="card">
-                        <div class="card-body" style="display: flex;column-gap: 35px;">
-                            <div>
-                                {% if user_profile.profile_img %}
-                                <img class="img-xs rounded profile-images" src="{{ user_profile.profile_img.url }}" alt="Profile image">
-                                {% else %}
-                                <img class="img-xs rounded profile-images" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=86&name={{ user_profile.first_name }}&rounded=false&bold=true" alt="Profile image">
-                                {% endif %}
-                                {% if user_profile.status == 'Active' %}
-                                <span class="dot-active" title="Status"></span>
-                                {% else %}
-                                <span class="dot-inactive" title="Status"></span>
-                                {% endif %}
-                                <p class="card-text d-flex justify-content-center" style="padding:5px;font-weight: 800;">{{ user_profile.Type }}</p>
-                            </div>
-                            <div class="web">
-                                <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
-                                <p class="card-text">{{ user_profile.Phone_number }}</p>
-                                <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
-                                <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
-                            </div>
-                            <div class="mobile">
-                                <div class="txt-mobile">
+        {% if request.user.is_superuser %}
+            <div class="collapse multi-collapse" id="multiCollapseExample1">
+                <div class="card-header d-flex justify-content-between" style="border: 1px solid #e3e6f0;align-items: baseline;">
+                    <h6 class="m-0 font-weight-bold text-primary">User</h6>
+                    {% if request.user.is_superuser %}
+                        <button onclick="window.location.href='{% url 'Add_user' %}'" class="btn btn-primary text-white" type="button">
+                            <i class="fa fa-plus"></i> Add
+                        </button>
+                    {% else %}
+                        {% for i in request.user.role.permissions.all %}
+                            {% if i.path_name == 'Add User' %}
+                                <button onclick="window.location.href='{% url 'Add_user' %}'" class="btn btn-primary text-white" type="button">
+                                    <i class="fa fa-plus"></i> Add
+                                </button>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% if user_profiles %}
+                <div class="row">
+                    {% for user_profile in user_profiles %}
+                    <div class="col-sm-4 p-2">
+                        <div class="card">
+                            <div class="card-body" style="display: flex;column-gap: 35px;">
+                                <div>
+                                    {% if user_profile.profile_img %}
+                                    <img class="img-xs rounded profile-images" src="{{ user_profile.profile_img.url }}" alt="Profile image">
+                                    {% else %}
+                                    <img class="img-xs rounded profile-images" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=86&name={{ user_profile.first_name }}&rounded=false&bold=true" alt="Profile image">
+                                    {% endif %}
+                                    {% if user_profile.status == 'Active' %}
+                                    <span class="dot-active" title="Status"></span>
+                                    {% else %}
+                                    <span class="dot-inactive" title="Status"></span>
+                                    {% endif %}
+                                    <p class="card-text d-flex justify-content-center" style="padding:5px;font-weight: 800;">{{ user_profile.Type }}</p>
+                                </div>
+                                <div class="web">
                                     <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
                                     <p class="card-text">{{ user_profile.Phone_number }}</p>
+
+                                    {% if request.user.is_superuser %}
+                                        <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                    {% else %}
+                                        {% for i in request.user.role.permissions.all %}
+                                            {% if i.path_name == 'Edit User' %}
+                                                <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    {% if request.user.is_superuser %}
+                                        <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                    {% else %}
+                                        {% for i in request.user.role.permissions.all %}
+                                            {% if i.path_name == 'View User' %}
+                                                <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+
                                 </div>
-                                <div class="btn-mobile">
-                                    <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
-                                    <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                <div class="mobile">
+                                    <div class="txt-mobile">
+                                        <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
+                                        <p class="card-text">{{ user_profile.Phone_number }}</p>
+                                    </div>
+                                    <div class="btn-mobile">
+                                        <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                        <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                {% else %}
+                <label for="" class="text-primary row" style="display: flex;border: 1px solid #e3e6f0;margin: 0px;margin-top: 10px;padding: 20px;">No Matches Found</label>
+                {% endif %}
             </div>
             {% else %}
-            <label for="" class="text-primary row" style="display: flex;border: 1px solid #e3e6f0;margin: 0px;margin-top: 10px;padding: 20px;">No Matches Found</label>
-            {% endif %}
-        </div>
-
-
-        <div class="collapse multi-collapse" id="multiCollapseExample2">
-            <div class="card card-body">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Permissions</h6>
-                    <button onclick="window.location.href='{% url 'Add_path' %}'" class="btn btn-primary text-white" type="button">
-                        <i class="fa fa-plus"></i> Add
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                {% if paths %}
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Parent</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Parent</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
-                            <tbody>
-                                {% for path in paths %}
-                                <tr>
-                                    <td>{{forloop.counter}}</td>
-                                    <td>{{path.path_name}}</td>
-                                    {% if path.parent %}
-                                    <td>{{path.parent}}</td>
-                                    {% else %}
-                                    <td></td>
+            {% for i in request.user.role.permissions.all %}
+                {% if i.path_name == 'View User' %}
+                    <div class="collapse multi-collapse" id="multiCollapseExample1">
+                        <div class="card-header d-flex justify-content-between" style="border: 1px solid #e3e6f0;align-items: baseline;">
+                            <h6 class="m-0 font-weight-bold text-primary">User</h6>
+                            {% if request.user.is_superuser %}
+                                <button onclick="window.location.href='{% url 'Add_user' %}'" class="btn btn-primary text-white" type="button">
+                                    <i class="fa fa-plus"></i> Add
+                                </button>
+                            {% else %}
+                                {% for i in request.user.role.permissions.all %}
+                                    {% if i.path_name == 'Add User' %}
+                                        <button onclick="window.location.href='{% url 'Add_user' %}'" class="btn btn-primary text-white" type="button">
+                                            <i class="fa fa-plus"></i> Add
+                                        </button>
                                     {% endif %}
-                                    <td><label class="{% if path.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
-                                        {{ path.status }}
-                                    </label></td>
-                                    <td><button onclick="window.location.href='{% url 'Edit_path' pathedit_id=path.id %}'" class="btn btn-primary text-white" type="button">
-                                        <i class="fa fa-edit"></i>
-                                    </button></td>
-                                    
-                                </tr>
                                 {% endfor %}
-                                {% else %}
-                                <label for="" class="text-primary">No Matches Found</label>
-                                {% endif %}
-                            </tbody>
-                        </table>
+                            {% endif %}
+                        </div>
+                        {% if user_profiles %}
+                        <div class="row">
+                            {% for user_profile in user_profiles %}
+                            <div class="col-sm-4 p-2">
+                                <div class="card">
+                                    <div class="card-body" style="display: flex;column-gap: 35px;">
+                                        <div>
+                                            {% if user_profile.profile_img %}
+                                            <img class="img-xs rounded profile-images" src="{{ user_profile.profile_img.url }}" alt="Profile image">
+                                            {% else %}
+                                            <img class="img-xs rounded profile-images" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=86&name={{ user_profile.first_name }}&rounded=false&bold=true" alt="Profile image">
+                                            {% endif %}
+                                            {% if user_profile.status == 'Active' %}
+                                            <span class="dot-active" title="Status"></span>
+                                            {% else %}
+                                            <span class="dot-inactive" title="Status"></span>
+                                            {% endif %}
+                                            <p class="card-text d-flex justify-content-center" style="padding:5px;font-weight: 800;">{{ user_profile.Type }}</p>
+                                        </div>
+                                        <div class="web">
+                                            <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
+                                            <p class="card-text">{{ user_profile.Phone_number }}</p>
+            
+                                            {% if request.user.is_superuser %}
+                                                <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                            {% else %}
+                                                {% for i in request.user.role.permissions.all %}
+                                                    {% if i.path_name == 'Edit User' %}
+                                                        <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+            
+                                            {% if request.user.is_superuser %}
+                                                <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                            {% else %}
+                                                {% for i in request.user.role.permissions.all %}
+                                                    {% if i.path_name == 'View User' %}
+                                                        <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+            
+                                        </div>
+                                        <div class="mobile">
+                                            <div class="txt-mobile">
+                                                <h5 class="card-title">{{ user_profile.first_name }} {{ user_profile.last_name }}</h5>
+                                                <p class="card-text">{{ user_profile.Phone_number }}</p>
+                                            </div>
+                                            <div class="btn-mobile">
+                                                <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                                <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <label for="" class="text-primary row" style="display: flex;border: 1px solid #e3e6f0;margin: 0px;margin-top: 10px;padding: 20px;">No Matches Found</label>
+                        {% endif %}
                     </div>
-                </div>
-            </div>
-        </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
 
-        <div class="collapse multi-collapse" id="multiCollapseExample3">
-            <div class="card card-body">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Roles</h6>
-                    <button onclick="window.location.href='{% url 'Add_role' %}'" class="btn btn-primary text-white" type="button">
-                        <i class="fa fa-plus"></i> Add
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                {% if roles %}
-                                <tr>
-                                    <th>#</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
-                            <tbody>
-                                {% for role in roles %}
-                                <tr>
-                                    <td>{{forloop.counter}}</td>
-                                    <td>{{role.role}}</td>
-                                    <td><label class="{% if role.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
-                                        {{ role.status }}
-                                    </label></td>
-                                    <td>
-                                    <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
-                                    <button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
-                                        <i class="fa fa-edit"></i>
+        {% if request.user.is_superuser %}
+            <div class="collapse multi-collapse" id="multiCollapseExample2">
+                <div class="card card-body">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Permissions</h6>
+
+                        {% if request.user.is_superuser %}
+                            <button onclick="window.location.href='{% url 'Add_path' %}'" class="btn btn-primary text-white" type="button">
+                                <i class="fa fa-plus"></i> Add
+                            </button>
+                        {% else %}
+                            {% for i in request.user.role.permissions.all %}
+                                {% if i.path_name == 'Add Path' %}
+                                    <button onclick="window.location.href='{% url 'Add_path' %}'" class="btn btn-primary text-white" type="button">
+                                        <i class="fa fa-plus"></i> Add
                                     </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% else %}
-                                <label for="" class="text-primary">No Matches Found</label>
                                 {% endif %}
-                            </tbody>
-                        </table>
+                            {% endfor %}
+                        {% endif %}
+
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    {% if paths %}
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Parent</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Parent</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    {% for path in paths %}
+                                    <tr>
+                                        <td>{{forloop.counter}}</td>
+                                        <td>{{path.path_name}}</td>
+                                        {% if path.parent %}
+                                        <td>{{path.parent}}</td>
+                                        {% else %}
+                                        <td></td>
+                                        {% endif %}
+                                        <td><label class="{% if path.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                                            {{ path.status }}
+                                        </label></td>
+                                        <td>
+
+                                            {% if request.user.is_superuser %}
+                                                <button onclick="window.location.href='{% url 'Edit_path' pathedit_id=path.id %}'" class="btn btn-primary text-white" type="button">
+                                                <i class="fa fa-edit"></i>
+                                                </button>
+                                            {% else %}
+                                                {% for i in request.user.role.permissions.all %}
+                                                    {% if i.path_name == 'Edit Path' %}
+                                                        <button onclick="window.location.href='{% url 'Edit_path' pathedit_id=path.id %}'" class="btn btn-primary text-white" type="button">
+                                                        <i class="fa fa-edit"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </td>
+                                        
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <label for="" class="text-primary">No Matches Found</label>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            {% else %}
+            {% for i in request.user.role.permissions.all %}
+                {% if i.path_name == 'View Path' %}
+                    <div class="collapse multi-collapse" id="multiCollapseExample2">
+                        <div class="card card-body">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 font-weight-bold text-primary">Permissions</h6>
+            
+                                {% if request.user.is_superuser %}
+                                    <button onclick="window.location.href='{% url 'Add_path' %}'" class="btn btn-primary text-white" type="button">
+                                        <i class="fa fa-plus"></i> Add
+                                    </button>
+                                {% else %}
+                                    {% for i in request.user.role.permissions.all %}
+                                        {% if i.path_name == 'Add Path' %}
+                                            <button onclick="window.location.href='{% url 'Add_path' %}'" class="btn btn-primary text-white" type="button">
+                                                <i class="fa fa-plus"></i> Add
+                                            </button>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+            
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            {% if paths %}
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Parent</th>
+                                                <th>Status</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Parent</th>
+                                                <th>Status</th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            {% for path in paths %}
+                                            <tr>
+                                                <td>{{forloop.counter}}</td>
+                                                <td>{{path.path_name}}</td>
+                                                {% if path.parent %}
+                                                <td>{{path.parent}}</td>
+                                                {% else %}
+                                                <td></td>
+                                                {% endif %}
+                                                <td><label class="{% if path.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                                                    {{ path.status }}
+                                                </label></td>
+                                                <td>
+            
+                                                    {% if request.user.is_superuser %}
+                                                        <button onclick="window.location.href='{% url 'Edit_path' pathedit_id=path.id %}'" class="btn btn-primary text-white" type="button">
+                                                        <i class="fa fa-edit"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        {% for i in request.user.role.permissions.all %}
+                                                            {% if i.path_name == 'Edit Path' %}
+                                                                <button onclick="window.location.href='{% url 'Edit_path' pathedit_id=path.id %}'" class="btn btn-primary text-white" type="button">
+                                                                <i class="fa fa-edit"></i>
+                                                                </button>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </td>
+                                                
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <label for="" class="text-primary">No Matches Found</label>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if request.user.is_superuser %}
+            <div class="collapse multi-collapse" id="multiCollapseExample3">
+                <div class="card card-body">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Roles</h6>
+
+                        {% if request.user.is_superuser %}
+                            <button onclick="window.location.href='{% url 'Add_role' %}'" class="btn btn-primary text-white" type="button">
+                                <i class="fa fa-plus"></i> Add
+                            </button>
+                        {% else %}
+                            {% for i in request.user.role.permissions.all %}
+                                {% if i.path_name == 'Add Role' %}
+                                    <button onclick="window.location.href='{% url 'Add_role' %}'" class="btn btn-primary text-white" type="button">
+                                        <i class="fa fa-plus"></i> Add
+                                    </button>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    {% if roles %}
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    {% for role in roles %}
+                                    <tr>
+                                        <td>{{forloop.counter}}</td>
+                                        <td>{{role.role}}</td>
+                                        <td><label class="{% if role.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                                            {{ role.status }}
+                                        </label></td>
+                                        <td>
+
+                                        {% if request.user.is_superuser %}
+                                            <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                        {% else %}
+                                            {% for i in request.user.role.permissions.all %}
+                                                {% if i.path_name == 'Set Permissions' %}
+                                                    <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {% if request.user.is_superuser %}
+                                            <button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                        {% else %}
+                                            {% for i in request.user.role.permissions.all %}
+                                                {% if i.path_name == 'Edit Role' %}
+                                                    <button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <label for="" class="text-primary">No Matches Found</label>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            {% for i in request.user.role.permissions.all %}
+                {% if i.path_name == 'View Role' %}
+                    <div class="collapse multi-collapse" id="multiCollapseExample3">
+                        <div class="card card-body">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="m-0 font-weight-bold text-primary">Roles</h6>
+            
+                                {% if request.user.is_superuser %}
+                                    <button onclick="window.location.href='{% url 'Add_role' %}'" class="btn btn-primary text-white" type="button">
+                                        <i class="fa fa-plus"></i> Add
+                                    </button>
+                                {% else %}
+                                    {% for i in request.user.role.permissions.all %}
+                                        {% if i.path_name == 'Add Role' %}
+                                            <button onclick="window.location.href='{% url 'Add_role' %}'" class="btn btn-primary text-white" type="button">
+                                                <i class="fa fa-plus"></i> Add
+                                            </button>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+            
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            {% if roles %}
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Role</th>
+                                                <th>Status</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Role</th>
+                                                <th>Status</th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            {% for role in roles %}
+                                            <tr>
+                                                <td>{{forloop.counter}}</td>
+                                                <td>{{role.role}}</td>
+                                                <td><label class="{% if role.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                                                    {{ role.status }}
+                                                </label></td>
+                                                <td>
+            
+                                                {% if request.user.is_superuser %}
+                                                    <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                                {% else %}
+                                                    {% for i in request.user.role.permissions.all %}
+                                                        {% if i.path_name == 'Set Permissions' %}
+                                                            <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+            
+                                                {% if request.user.is_superuser %}
+                                                    <button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                {% else %}
+                                                    {% for i in request.user.role.permissions.all %}
+                                                        {% if i.path_name == 'Edit Role' %}
+                                                            <button onclick="window.location.href='{% url 'Edit_role' roleedit_id=role.id %}'" class="btn btn-primary text-white" type="button">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+            
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <label for="" class="text-primary">No Matches Found</label>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
 
     </div>
 </div>
