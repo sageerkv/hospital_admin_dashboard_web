@@ -96,12 +96,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
 class UserLog(models.Model):
     created_at=models.DateTimeField(auto_now=True)
-    log_type=models.CharField(max_length=20,choices=(
+    log_type=models.CharField(max_length=100,choices=(
         ('Created_User','Created_User'),
+        ('Edited_User','Edited_User'),
         ('Logged_in','Logged_in'),
         ('Password_changed','Password_changed'),
         ('Activated','Activated'),
         ('Deactivated','Deactivated'),
+        ('Admin_and_Staff','Admin_and_Staff'),
     ))
     created_user=models.CharField(max_length=100)
     effected_user=models.CharField(max_length=100,null=True,blank=True)

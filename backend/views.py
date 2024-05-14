@@ -81,9 +81,11 @@ def user_logout(request):
 def Profile(request):
     logged_in_user = request.user
     user_profiles = CustomUser.objects.exclude(pk=logged_in_user.pk).exclude(is_superuser=True)
+    user_emails = user_profiles.values_list('email', flat=True)
+    user_logs = UserLog.objects.filter(created_user__in=user_emails)
     paths = Path.objects.all().order_by("-Created_at").order_by("-id")
     roles=Role.objects.all().order_by("-Created_at").order_by("-id").order_by("role")
-    context={'user_profiles':user_profiles, 'paths':paths, 'roles':roles}
+    context={'user_profiles':user_profiles, 'paths':paths, 'roles':roles,'user_logs':user_logs}
     return render(request, 'profile/profile.html',context)
 
 def change_profile_image(request):
@@ -153,7 +155,7 @@ def Add_user(request):
             form=CustomUserForm(request.POST)   
             if form.is_valid():
                 new_user=form.save()
-                fnlog(request,new_user.id,'Created_User','','')
+                fnlog(request,new_user.email,'Created_User','','')
                 messages.success(request,user_add)
                 return redirect("View_user")
             else:
@@ -179,8 +181,9 @@ def User_list(request,userview_id):
     if request.user.is_superuser or PermisionsOf(request,'View User').has_permission():
         context=get_menu(request)
         view_user=CustomUser.objects.get(id=userview_id)  
-        
-        context['view_user']=view_user    
+        user_logs=UserLog.objects.filter(created_user=view_user.email)
+        context['view_user']=view_user 
+        context['user_logs']=user_logs   
         return render(request,'user/view_user.html',context)
 
     else:
@@ -201,7 +204,8 @@ def Edit_user(request,useredit_id):
         if request.method == 'POST':
             form = EditUserForm(request.POST, request.FILES, instance=users)
             if form.is_valid():
-                form.save()
+                edit_user=form.save()
+                fnlog(request,edit_user.email,'Edited_User','','')
             
                 if next_url:
                     messages.success(request,profile_edit)
@@ -237,7 +241,8 @@ def changeuserpassword(request,user_id):
         form=ChangeUserPasswordForm(user=user,data=request.POST )
         print(form)
         if form.is_valid():
-            form.save()
+            password=form.save()
+            fnlog(request,password.email,'Password_changed','','')
             update_session_auth_hash(request,form.user)
             
             current_session_key = request.session.session_key
@@ -265,6 +270,7 @@ def Add_path(request):
 
             if form.is_valid():
                 form.save()
+                fnlog(request,'','Admin_and_Staff',"Add Path",'')
                 messages.success(request,path_add)
                 return redirect(Profile)
             else:
@@ -288,6 +294,7 @@ def Edit_path(request,pathedit_id):
 
         if form.is_valid():
             form.save()
+            fnlog(request,'','Admin_and_Staff',"Edit Path",'')
             messages.success(request,path_edit)
             return redirect(Profile)
         
@@ -313,6 +320,7 @@ def Add_role(request):
             form=RoleForm(request.POST)
             if form.is_valid():
                 form.save()
+                fnlog(request,'','Admin_and_Staff',"Add Role",'')
                 messages.success(request,role_add)
                 return redirect(Profile)
                 
@@ -339,6 +347,7 @@ def Edit_role(request,roleedit_id):
 
         if form.is_valid():
             form.save()
+            fnlog(request,'','Admin_and_Staff',"Edit Role",'')
             messages.success(request,role_edit)
             return redirect(Profile)
             
@@ -367,6 +376,7 @@ def Add_permissions(request,perm_id):
                 addperm.permissions.add(Path.objects.get(id=i))
             for j in mainperm:
                 addperm.permissions.add(Path.objects.get(id=j))
+            fnlog(request,'','Admin_and_Staff',"Set Permissions",'')
             messages.success(request,permission_add)
             return redirect(Profile)
 
