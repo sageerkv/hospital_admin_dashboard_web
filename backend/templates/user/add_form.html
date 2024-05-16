@@ -95,6 +95,21 @@
               </div>
             </div>
             {% endif %}
+           
+            {% if not edit %}
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                <input type="text" class="form-control" value="{{ form.instance.role }}" disabled>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-6">
+              <div class="form-group">
+                <label class="form-label">Type</label>
+                <input type="text" class="form-control" value="{{ form.Type.value }}" disabled>
+              </div>
+            </div>
+            {% else %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">
                 <label class="form-label">Role</label>
@@ -107,6 +122,9 @@
                 {{form.Type}}
               </div>
             </div>
+            {% endif %}
+            
+            
             {% if not next_url %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">

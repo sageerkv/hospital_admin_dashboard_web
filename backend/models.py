@@ -105,8 +105,8 @@ class UserLog(models.Model):
         ('Deactivated','Deactivated'),
         ('Admin_and_Staff','Admin_and_Staff'),
     ))
-    created_user=models.CharField(max_length=100)
-    effected_user=models.CharField(max_length=100,null=True,blank=True)
+    created_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_user_logs')
+    effected_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='effected_user_logs', blank=True, null=True)
     reason=models.CharField(max_length=100,null=True,blank=True)
     remarks=models.TextField(max_length=500,null=True,blank=True)
 

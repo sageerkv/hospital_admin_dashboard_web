@@ -237,11 +237,11 @@
             {% endif %}
 
             {% if request.user.is_superuser %}
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permissions</button>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permission</button>
             {% else %}
                 {% for i in request.user.role.permissions.all %}
                     {% if i.path_name == 'View Path' %}
-                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permissions</button>
+                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Permission</button>
                     {% endif %}
                 {% endfor %}
             {% endif %}
@@ -256,7 +256,7 @@
                 {% endfor %}
             {% endif %}
 
-            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample4" aria-expanded="false" aria-controls="multiCollapseExample4">Activity Logs</button>
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample4" aria-expanded="false" aria-controls="multiCollapseExample4">My Activity Log</button>
 
         </p>
 
@@ -347,7 +347,7 @@
             <div class="collapse multi-collapse {% if request.user|has_permission:"View User" %}{% else %}{% if request.user|has_permission:"View Path" %}show{% endif %}{% endif %}" id="multiCollapseExample2">
                 <div class="card card-body">
                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Permissions</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">Permission</h6>
 
                         {% if request.user.is_superuser %}
                             <button onclick="window.location.href='{% url 'Add_path' %}'" class="btn btn-primary text-white" type="button">
@@ -527,7 +527,8 @@
                             {% for user_log in user_logs %}
                             <div class="feed-item">
                                 <div class="date">{{user_log.created_at}}</div>
-                                <div class="text">{{user_log.log_type}} - {{user_log.remarks}}</div>
+                                <div class="text">{% if user_log.effected_user %}Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
+                                <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %}</div>
                             </div>
                             {% endfor %}
                         </div>

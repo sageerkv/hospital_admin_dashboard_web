@@ -20,6 +20,8 @@ urlpatterns = [
     path('User_list/<userview_id>',views.User_list,name="User_list"),
     # password
     path('change_user_password/<user_id>',views.changeuserpassword,name="change_user_password"),
+    # activity_logs
+    path('Activity_logs', views.Activity_logs, name='Activity_logs'),
     
     # path
     path('Add_path', views.Add_path, name='Add_path'),

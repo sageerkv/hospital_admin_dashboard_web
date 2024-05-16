@@ -159,14 +159,15 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-4 px-4">  
-        <h2>Activity Logs</h2>
+        <h2>Activity Log</h2>
         {% if user_logs %}
             
             <div class="activity-feed">
                 {% for user_log in user_logs %}
                 <div class="feed-item">
                     <div class="date">{{user_log.created_at}}</div>
-                    <div class="text">{{user_log.log_type}} - {{user_log.remarks}}</div>
+                    <div class="text">{% if user_log.effected_user %}Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
+                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %}</div>
                 </div>
                 {% endfor %}
             </div>

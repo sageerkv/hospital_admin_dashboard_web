@@ -18,9 +18,9 @@ from collections import defaultdict
 import json
 
 
-def fnlog(request,effected_user,type,remarks,reason):
-    log=UserLog(created_user=request.user,effected_user=effected_user,log_type=type,reason=reason,remarks=remarks)
-    log.save()
+def fnlog(request, effected_user, type, remarks, reason):
+    created_user = request.user if request.user.is_authenticated else None
+    log = UserLog.objects.create(created_user=created_user, effected_user=effected_user, log_type=type, reason=reason, remarks=remarks)
 
 def user_login(request):
     if request.method=="POST":
@@ -36,7 +36,7 @@ def user_login(request):
                     user.loginAttempts = 0
                     user.save()
                     login(request, user)
-                    fnlog(request, '', 'Logged_in', '', '')
+                    fnlog(request, None, 'Logged_in', '', '')
                     print(user.role)
                     messages.success(request,'Login successfully.')
                     return redirect("admin")
@@ -81,8 +81,7 @@ def user_logout(request):
 def Profile(request):
     logged_in_user = request.user
     user_profiles = CustomUser.objects.exclude(pk=logged_in_user.pk).exclude(is_superuser=True)
-    user_emails = user_profiles.values_list('email', flat=True)
-    user_logs = UserLog.objects.filter(created_user__in=user_emails)
+    user_logs = UserLog.objects.filter(created_user=logged_in_user)
     paths = Path.objects.all().order_by("-Created_at").order_by("-id")
     roles=Role.objects.all().order_by("-Created_at").order_by("-id").order_by("role")
     context={'user_profiles':user_profiles, 'paths':paths, 'roles':roles,'user_logs':user_logs}
@@ -155,7 +154,7 @@ def Add_user(request):
             form=CustomUserForm(request.POST)   
             if form.is_valid():
                 new_user=form.save()
-                fnlog(request,new_user.email,'Created_User','','')
+                fnlog(request,new_user,'Created_User','','')
                 messages.success(request,user_add)
                 return redirect("View_user")
             else:
@@ -181,7 +180,7 @@ def User_list(request,userview_id):
     if request.user.is_superuser or PermisionsOf(request,'View User').has_permission():
         context=get_menu(request)
         view_user=CustomUser.objects.get(id=userview_id)  
-        user_logs=UserLog.objects.filter(created_user=view_user.email)
+        user_logs=UserLog.objects.filter(created_user=view_user.id)
         context['view_user']=view_user 
         context['user_logs']=user_logs   
         return render(request,'user/view_user.html',context)
@@ -189,7 +188,19 @@ def User_list(request,userview_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
+   
+   
+@login_required(login_url="login")
+def Activity_logs(request):
+    if request.user.is_superuser or PermisionsOf(request,'Activity Log').has_permission():
+        context=get_menu(request)
+        user_logs=UserLog.objects.exclude(created_user=request.user)
+        context['user_logs']=user_logs
+        return render(request,'user/activity_logs.html',context)
     
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin") 
     
     
     
@@ -205,7 +216,7 @@ def Edit_user(request,useredit_id):
             form = EditUserForm(request.POST, request.FILES, instance=users)
             if form.is_valid():
                 edit_user=form.save()
-                fnlog(request,edit_user.email,'Edited_User','','')
+                fnlog(request,edit_user,'Edited_User','','')
             
                 if next_url:
                     messages.success(request,profile_edit)
@@ -242,7 +253,7 @@ def changeuserpassword(request,user_id):
         print(form)
         if form.is_valid():
             password=form.save()
-            fnlog(request,password.email,'Password_changed','','')
+            fnlog(request,password,'Password_changed','','')
             update_session_auth_hash(request,form.user)
             
             current_session_key = request.session.session_key
@@ -270,7 +281,7 @@ def Add_path(request):
 
             if form.is_valid():
                 form.save()
-                fnlog(request,'','Admin_and_Staff',"Add Path",'')
+                fnlog(request,None,'Admin_and_Staff',"Add Path",'')
                 messages.success(request,path_add)
                 return redirect(Profile)
             else:
@@ -294,7 +305,7 @@ def Edit_path(request,pathedit_id):
 
         if form.is_valid():
             form.save()
-            fnlog(request,'','Admin_and_Staff',"Edit Path",'')
+            fnlog(request,None,'Admin_and_Staff',"Edit Path",'')
             messages.success(request,path_edit)
             return redirect(Profile)
         
@@ -320,7 +331,7 @@ def Add_role(request):
             form=RoleForm(request.POST)
             if form.is_valid():
                 form.save()
-                fnlog(request,'','Admin_and_Staff',"Add Role",'')
+                fnlog(request,None,'Admin_and_Staff',"Add Role",'')
                 messages.success(request,role_add)
                 return redirect(Profile)
                 
@@ -347,7 +358,7 @@ def Edit_role(request,roleedit_id):
 
         if form.is_valid():
             form.save()
-            fnlog(request,'','Admin_and_Staff',"Edit Role",'')
+            fnlog(request,None,'Admin_and_Staff',"Edit Role",'')
             messages.success(request,role_edit)
             return redirect(Profile)
             
@@ -376,7 +387,7 @@ def Add_permissions(request,perm_id):
                 addperm.permissions.add(Path.objects.get(id=i))
             for j in mainperm:
                 addperm.permissions.add(Path.objects.get(id=j))
-            fnlog(request,'','Admin_and_Staff',"Set Permissions",'')
+            fnlog(request,None,'Admin_and_Staff',"Set Permissions",'')
             messages.success(request,permission_add)
             return redirect(Profile)
 
