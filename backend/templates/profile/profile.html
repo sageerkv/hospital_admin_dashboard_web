@@ -85,7 +85,7 @@
         cursor: pointer;
     }
     .delete-picture-button .fa {
-        background: #4e73df;
+        background: {%company_constant_color%};
         padding: 2px 4px;
         border-radius: 50%;
         color: #fff;
@@ -181,7 +181,7 @@
             <h3 class="m-0 font-weight-bold text-primary">{{user.first_name}} {{user.last_name}}</h3>
         </div>
         <div style="display: grid;justify-items: end;">
-            <a href="{% url 'Edit_user' useredit_id=user.id %}?next={{ request.path }}" style="font-size: 20px;"><i class="fas fa-edit"></i></a><br>
+            <a href="{% url 'Edit_user' useredit_id=user.id %}?next={{ request.path }}" style="font-size: 20px;color:{%company_constant_color%};"><i class="fas fa-edit"></i></a><br>
             <a href="{% url 'change_user_password' user_id=user.id %}" class="btn btn-primary grid-web"><i class="fas fa-key"></i> Change Password</a>
             <a href="{% url 'change_user_password' user_id=user.id %}" class="btn btn-primary grid-mob"><i class="fas fa-key"></i></a>
         </div>
@@ -481,11 +481,15 @@
                                         <td>
 
                                         {% if request.user.is_superuser %}
-                                            <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                            <button onclick="window.location.href='{% url 'Add_permissions' perm_id=role.id %}'" class="btn btn-outline-primary" type="button">
+                                                Set Permission
+                                            </button>
                                         {% else %}
                                             {% for i in request.user.role.permissions.all %}
                                                 {% if i.path_name == 'Set Permissions' %}
-                                                    <a href="{% url 'Add_permissions' perm_id=role.id %}" class="btn btn-outline-primary">Set Permission</a>
+                                                <button onclick="window.location.href='{% url 'Add_permissions' perm_id=role.id %}'" class="btn btn-outline-primary" type="button">
+                                                    Set Permission
+                                                </button>
                                                 {% endif %}
                                             {% endfor %}
                                         {% endif %}
@@ -528,7 +532,7 @@
                             <div class="feed-item">
                                 <div class="date">{{user_log.created_at}}</div>
                                 <div class="text">{% if user_log.effected_user %}Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
-                                <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %}</div>
+                                <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %} {% if user_log.reason %}: {{user_log.reason}}{% endif %}</div>
                             </div>
                             {% endfor %}
                         </div>
@@ -549,7 +553,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="deletePictureModalLabel">Confirm Delete</h5>
-          <a href="{% url "Profile" %}" class="btn-close"><i class="fa fa-times"></i></a>
+          <a style="color:{%company_constant_color%};" href="{% url "Profile" %}" class="btn-close"><i class="fa fa-times"></i></a>
         </div>
         <div class="modal-body">
           Are you sure you want to delete your profile picture?

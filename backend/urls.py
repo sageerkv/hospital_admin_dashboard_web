@@ -31,4 +31,9 @@ urlpatterns = [
     path('Add_role', views.Add_role, name='Add_role'),
     path('Edit_role/<roleedit_id>',views.Edit_role,name="Edit_role"),
     path('Add_permissions/<perm_id>',views.Add_permissions,name="Add_permissions"),
+    
+    # site_settings
+    path('site_settings',views.site_settings, name="site_settings"),
+    path('add_site_settings',views.add_site_settings, name="add_site_settings"),
+    path('edit_site_settings/<int:site_settingsedit_id>',views.edit_site_settings, name="edit_site_settings"),
 ]

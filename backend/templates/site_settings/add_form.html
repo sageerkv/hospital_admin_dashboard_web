@@ -1,0 +1,108 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+
+
+{% block Page_Content %}
+<style>
+  .color-picker {
+      height: 30px;
+      width: 80px;
+      margin-bottom: 10px;
+  }
+  
+  .color-bar {
+      display: inline-block;
+      margin-left: 10px;
+  }
+</style>
+
+
+
+<div class="col-md-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">{% if edit %}Edit {% else %}Add{% endif %} Site Settings</h4>
+      {% comment %} <p class="card-description">
+        Role form
+      </p> {% endcomment %}
+      <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Company Name<span class="danger" style="color: red;"> *</span></label>
+              {{form.company_name}}
+            </div>
+          </div>
+                    
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">Contact<span class="danger" style="color: red;"> *</span></label>
+              {{form.contact}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Email<span class="danger" style="color: red;"> *</span></label>
+              {{form.mail}}
+            </div>
+          </div>
+                    
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">Copyright<span class="danger" style="color: red;"> *</span></label>
+              {{form.copyright}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">Logo<span class="danger" style="color: red;"> *</span></label>
+              {{form.logo}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">Fav Icon<span class="danger" style="color: red;"> *</span></label>
+              {{form.favicon}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">{{ form.constant_color.label }}<span class="danger" style="color: red;"> *</span></label><BR>
+              <input type="color" class="color-picker" id="color-picker" name="constant_color" oninput="updateColor('color-picker', 'constant-color-input')" value="{{ form.constant_color.value | default:"#4e73df" }}">
+              <input type="text" class="color-text" id="constant-color-input" oninput="updateColor('constant-color-input', 'color-picker')" placeholder="Enter color hex code">
+            </div>
+          </div>
+
+        </div>
+     
+       <br>
+        <button type="submit" class="btn btn-primary me-2">Submit</button>
+        <button onclick="window.location.href='{% url 'Profile' %}'" class="btn btn-light" type="button">Cancel</button>
+      </form>
+    </div>
+  </div>
+</div>
+   
+<script>
+  function updateColor(colorPickerId, inputId) {
+      const colorPicker = document.getElementById(colorPickerId);
+      const colorInput = document.getElementById(inputId);
+
+      const selectedColor = colorPicker.value;
+      colorInput.value = selectedColor;  // Update input field value
+  }
+
+  // Initialize color values on window load
+  window.onload = function () {
+      updateColor('color-picker', 'constant-color-input');
+  };
+</script>
+
+{% endblock Page_Content %}

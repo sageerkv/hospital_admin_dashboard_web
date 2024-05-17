@@ -1,6 +1,6 @@
 {% extends "index.html" %} 
 {% load static %} 
-
+{% load custom_filters %}
 
 
 {% block Page_Content %}
@@ -116,7 +116,7 @@
           <h3 class="m-0 font-weight-bold text-primary">{{view_user.first_name}} {{view_user.last_name}}</h3>
       </div>
       <div style="display: grid;justify-items: end;">
-        <a href="{% url 'Edit_user' useredit_id=view_user.id %}" style="font-size: 20px;" title="Edit"><i class="fas fa-edit"></i></a>
+        <a href="{% url 'Edit_user' useredit_id=view_user.id %}" style="font-size: 20px;color:{%company_constant_color%};" title="Edit"><i class="fas fa-edit"></i></a>
         <a href="{% url 'change_user_password' user_id=view_user.id %}" class="btn btn-primary grid-web"><i class="fas fa-key"></i> Change Password</a>
         <a href="{% url 'change_user_password' user_id=view_user.id %}" class="btn btn-primary grid-mob"><i class="fas fa-key"></i></a>
     </div>
@@ -167,7 +167,7 @@
                 <div class="feed-item">
                     <div class="date">{{user_log.created_at}}</div>
                     <div class="text">{% if user_log.effected_user %}Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
-                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %}</div>
+                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %} {% if user_log.reason %}: {{user_log.reason}}{% endif %}</div>
                 </div>
                 {% endfor %}
             </div>

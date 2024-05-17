@@ -77,6 +77,7 @@ def user_logout(request):
     return redirect('login')
 
 
+# profile
 @login_required(login_url="login")
 def Profile(request):
     logged_in_user = request.user
@@ -86,6 +87,7 @@ def Profile(request):
     roles=Role.objects.all().order_by("-Created_at").order_by("-id").order_by("role")
     context={'user_profiles':user_profiles, 'paths':paths, 'roles':roles,'user_logs':user_logs}
     return render(request, 'profile/profile.html',context)
+
 
 def change_profile_image(request):
     if request.method == 'POST' and request.FILES.get('profile_img'):
@@ -97,6 +99,7 @@ def change_profile_image(request):
         return JsonResponse({'url': request.user.profile_img.url})
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+
 def delete_profile_image(request):
     if request.method == 'POST':
         # Delete the profile image associated with the current user
@@ -106,11 +109,13 @@ def delete_profile_image(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
+
 @login_required(login_url="login")
 def index(request):
     return render(request, 'index.html')
 
 
+# user
 @login_required(login_url="login")
 def View_user(request):
     if request.user.is_superuser or PermisionsOf(request,'View User').has_permission():
@@ -144,6 +149,8 @@ def View_user(request):
         return redirect("admin")
     
     
+    
+    
 @login_required(login_url="login")
 def Add_user(request):
     if request.user.is_superuser or PermisionsOf(request,'Add User').has_permission():
@@ -151,9 +158,19 @@ def Add_user(request):
         form=CustomUserForm()
         context['form']=form
         if request.method=="POST":
-            form=CustomUserForm(request.POST)   
+            form=CustomUserForm(request.POST, request.FILES)   
             if form.is_valid():
                 new_user=form.save()
+                
+                # changed_data = {}
+                # for field in form.changed_data:
+                #     if field.startswith('password'):
+                #         continue
+                #     new_value = form.cleaned_data.get(field)
+                #     if new_value is not None:
+                #         changed_data[field] = new_value
+                # changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+                
                 fnlog(request,new_user,'Created_User','','')
                 messages.success(request,user_add)
                 return redirect("View_user")
@@ -188,19 +205,6 @@ def User_list(request,userview_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
-   
-   
-@login_required(login_url="login")
-def Activity_logs(request):
-    if request.user.is_superuser or PermisionsOf(request,'Activity Log').has_permission():
-        context=get_menu(request)
-        user_logs=UserLog.objects.exclude(created_user=request.user)
-        context['user_logs']=user_logs
-        return render(request,'user/activity_logs.html',context)
-    
-    else:
-        messages.error(request,page_deny)
-        return redirect("admin") 
     
     
     
@@ -216,13 +220,21 @@ def Edit_user(request,useredit_id):
             form = EditUserForm(request.POST, request.FILES, instance=users)
             if form.is_valid():
                 edit_user=form.save()
-                fnlog(request,edit_user,'Edited_User','','')
-            
+                
+                changed_data = {}
+                for field in form.changed_data:
+                    new_value = form.cleaned_data.get(field)
+                    if new_value is not None:
+                        changed_data[field] = new_value
+                changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+                
                 if next_url:
                     messages.success(request,profile_edit)
+                    fnlog(request,edit_user,'Edited_Profile',changes_str,'')
                     return redirect(next_url)  # Redirect to the previous page
                 else:
                     messages.success(request,user_edit)
+                    fnlog(request,edit_user,'Edited_User',changes_str,'')
                     return redirect("View_user")
         else:
             form = EditUserForm(instance=users)   
@@ -242,8 +254,23 @@ def Edit_user(request,useredit_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
+
+
+#activity logs  
+@login_required(login_url="login")
+def Activity_logs(request):
+    if request.user.is_superuser or PermisionsOf(request,'Activity Log').has_permission():
+        context=get_menu(request)
+        user_logs=UserLog.objects.exclude(created_user=request.user)
+        context['user_logs']=user_logs
+        return render(request,'user/activity_logs.html',context)
     
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")    
+     
     
+# password change
 def changeuserpassword(request,user_id):
     user=CustomUser.objects.get(id=user_id)
     form=ChangeUserPasswordForm(user)
@@ -268,7 +295,7 @@ def changeuserpassword(request,user_id):
     return render(request,'user/changeuserpassword.html',{'form':form})
 
 
-
+# path
 @login_required(login_url="login")
 def Add_path(request):
     if request.user.is_superuser or PermisionsOf(request,'Add Path').has_permission():
@@ -305,7 +332,15 @@ def Edit_path(request,pathedit_id):
 
         if form.is_valid():
             form.save()
-            fnlog(request,None,'Admin_and_Staff',"Edit Path",'')
+            
+            changed_data = {}
+            for field in form.changed_data:
+                new_value = form.cleaned_data.get(field)
+                if new_value is not None:
+                    changed_data[field] = new_value
+            changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+            
+            fnlog(request,None,'Admin_and_Staff',"Edit Path",changes_str)
             messages.success(request,path_edit)
             return redirect(Profile)
         
@@ -319,7 +354,7 @@ def Edit_path(request,pathedit_id):
         messages.error(request,page_deny)
         return redirect("admin")
     
-    
+# role 
 @login_required(login_url="login")
 def Add_role(request):
     if request.user.is_superuser or PermisionsOf(request,'Add Role').has_permission():
@@ -358,7 +393,15 @@ def Edit_role(request,roleedit_id):
 
         if form.is_valid():
             form.save()
-            fnlog(request,None,'Admin_and_Staff',"Edit Role",'')
+            
+            changed_data = {}
+            for field in form.changed_data:
+                new_value = form.cleaned_data.get(field)
+                if new_value is not None:
+                    changed_data[field] = new_value
+            changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+            
+            fnlog(request,None,'Admin_and_Staff',"Edit Role",changes_str)
             messages.success(request,role_edit)
             return redirect(Profile)
             
@@ -396,6 +439,76 @@ def Add_permissions(request,perm_id):
         context['permission']=permission
 
         return render(request, 'role/add_permission.html', context)
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+    
+#site settings 
+@login_required(login_url="login")
+def site_settings(request):
+    if request.user.is_superuser or PermisionsOf(request,'Site Settings').has_permission():
+        context=get_menu(request)
+        Site_data=Site_settings.objects.all()
+        context['Site_data']=Site_data
+        return render(request,'site_settings/site_settings.html',context)
+    
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")     
+    
+@login_required(login_url="login")
+def add_site_settings(request):
+    if request.user.is_superuser or PermisionsOf(request,'Add Site Settings').has_permission():
+        context=get_menu(request)
+        form=SiteSettingsForm()
+        context['form']=form
+
+        if request.method=="POST":
+            form=SiteSettingsForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                fnlog(request,None,'Admin_and_Staff',"Add Site Settings",'')
+                messages.success(request,site_settings_add)
+                return redirect(site_settings)
+                
+            else:
+                form=RoleForm()
+                context['form']=form
+                return render(request,'site_settings/add_form.html',context)
+                
+        return render(request,'site_settings/add_form.html',context)
+    
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+
+@login_required(login_url="login")
+def edit_site_settings(request,site_settingsedit_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'Edit Site Settings').has_permission():
+        context=get_menu(request)
+        Site_data=Site_settings.objects.get(id=site_settingsedit_id)
+        form=SiteSettingsForm(request.POST or None, request.FILES or None,instance=Site_data)
+        context['form']=form
+
+        if form.is_valid():
+            form.save()
+            
+            changed_data = {}
+            for field in form.changed_data:
+                new_value = form.cleaned_data.get(field)
+                if new_value is not None:
+                    changed_data[field] = new_value
+            changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+            
+            fnlog(request,None,'Admin_and_Staff',"Edit Site Settings",changes_str)
+            messages.success(request,site_settings_edit)
+            return redirect(site_settings)
+            
+        return render(request,'site_settings/add_form.html',context)
+
     else:
         messages.error(request,page_deny)
         return redirect("admin")

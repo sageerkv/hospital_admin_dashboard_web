@@ -130,3 +130,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+BASE_PATH='/static/settings' #TODO create  folder inside static with basepath
+IMAGE_LOGO_NAME='user.png'   
+FAV_ICON_NAME='user_black.png'

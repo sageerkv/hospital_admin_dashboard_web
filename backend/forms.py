@@ -118,3 +118,14 @@ class RoleForm(forms.ModelForm):
         super(RoleForm, self).__init__(*args, **kwargs)
         for name in self.fields.keys():
             self.fields[name].widget.attrs.update({'class':'form-control'})
+            
+            
+class SiteSettingsForm(forms.ModelForm):
+    class Meta:
+        model=Site_settings
+        fields="__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(SiteSettingsForm, self).__init__(*args, **kwargs)
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({'class':'form-control'})

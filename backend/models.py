@@ -99,6 +99,7 @@ class UserLog(models.Model):
     log_type=models.CharField(max_length=100,choices=(
         ('Created_User','Created_User'),
         ('Edited_User','Edited_User'),
+        ('Edited_Profile','Edited_Profile'),
         ('Logged_in','Logged_in'),
         ('Password_changed','Password_changed'),
         ('Activated','Activated'),
@@ -113,3 +114,29 @@ class UserLog(models.Model):
     class Meta:
         db_table = 'UserLog'
         ordering = ['-created_at']
+        
+        
+class Site_settings(models.Model):
+    company_name = models.CharField(max_length = 500,blank=True,null=True)
+    contact=models.CharField(max_length=20,blank=True,null=True)
+    mail = models.EmailField(unique=True,blank=True,null=True)
+    copyright = models.CharField(max_length = 500,blank=True,null=True)
+    facebook_link = models.CharField(max_length = 500,blank=True,null=True)
+    instagram_link = models.CharField(max_length = 500,blank=True,null=True)
+    Youtube_link = models.CharField(max_length = 500,blank=True,null=True)
+    Twitter_link = models.CharField(max_length = 500,blank=True,null=True)
+    address_line_1 = models.CharField(max_length = 500,blank=True,null=True)
+    address_line_2 = models.CharField(max_length = 500,blank=True,null=True)
+    address_line_3 = models.CharField(max_length = 500,blank=True,null=True)
+    address_line_4 = models.CharField(max_length = 500,blank=True,null=True)
+    whatsapp_number = models.CharField(max_length = 500,blank=True,null=True)
+    whatsapp_contact_number = models.CharField(max_length = 500,blank=True,null=True)
+    logo = models.ImageField(upload_to='logo/', null=True, blank=True)
+    favicon = models.ImageField(upload_to='favicon/', null=True, blank=True)
+    web_url = models.CharField(max_length = 500,blank=True,null=True)
+    # color
+    constant_color = models.CharField(max_length = 500,blank=True,null=True)
+
+    class Meta:
+        db_table = 'Site Settings'
+        ordering = ['-company_name']

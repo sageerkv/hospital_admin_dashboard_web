@@ -96,11 +96,11 @@
             </div>
             {% endif %}
            
-            {% if not edit %}
+            {% if next_url %}
             <div class="col-md-6 col-lg-6">
               <div class="form-group">
                 <label class="form-label">Role</label>
-                <input type="text" class="form-control" value="{{ form.instance.role }}" disabled>
+                <input type="text" class="form-control" value="{% if form.instance.role is not None %}{{ form.instance.role }}{% endif %}" disabled>
               </div>
             </div>
             <div class="col-md-6 col-lg-6">

@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,9 +10,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-
-    <title>Dental Admin - Dashboard</title>
-
+    
+    <title>{%company_name%} Admin - Dashboard</title>
+    <link rel="icon" type="image/png" href="{%fav_path%}" sizes="192x192">
     <!-- Custom fonts for this template-->
     <link href="{% static "vendor/fontawesome-free/css/all.min.css" %}" rel="stylesheet" type="text/css">
     <link
@@ -21,11 +22,60 @@
     <!-- Custom styles for this template-->
     <link href="{% static "css/sb-admin-2.min.css" %}" rel="stylesheet">
     
+    
     <!-- Custom styles for this page -->
     <link href="{% static "vendor/datatables/dataTables.bootstrap4.min.css" %}" rel="stylesheet">
 
 </head>
-<style>  
+<style> 
+    .bg-gradient-primary {
+        background-color: {%company_constant_color%};
+        background-image: linear-gradient(180deg, {%company_constant_color%} 10%, {%company_constant_color%} 100%);
+        background-size: cover;
+    }
+    .text-primary{
+        color:{%company_constant_color%} !important;
+    }
+    .btn-primary {
+        color: #fff;
+        background-color: {%company_constant_color%} !important;
+        border-color: {%company_constant_color%} !important;
+    }
+    .btn-primary:hover {
+        color: #fff;
+        background-color: {%company_constant_color%} !important;
+        border-color: {%company_constant_color%} !important;
+        opacity:0.9;
+    }
+    .btn-outline-primary {
+        color: {%company_constant_color%} !important;
+        border-color: {%company_constant_color%} !important;
+    }
+    .btn-outline-primary:hover {
+        color: #ffffff !important;
+        background-color: {%company_constant_color%} !important;
+    }
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: {%company_constant_color%} !important;
+        border-color: {%company_constant_color%} !important;
+    }
+    .page-link {
+        position: relative;
+        display: block;
+        padding: .5rem .75rem;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #202126;
+        background-color: #fff;
+        border: 1px solid #dddfeb;
+    }
+    .dropdown-item.active, .dropdown-item:active {
+        color: #fff;
+        text-decoration: none;
+        background-color: {%company_constant_color%} !important;
+    }
     .slide-alert {
         opacity: 0;
         position: relative;
@@ -75,9 +125,9 @@
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url "admin" %}">
                 <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
+                    <img class="img-xs" src="{%logo_path%}" alt="Profile image" style="width: 36px; height: auto;">
                 </div>
-                <div class="sidebar-brand-text mx-3">Dental admin<sup></sup></div>
+                <div class="sidebar-brand-text mx-3">{%company_name%} admin<sup></sup></div>
             </a>
 
             <!-- Divider -->
@@ -385,7 +435,7 @@
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{% url "site_settings" %}">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Settings
                                 </a>
@@ -789,7 +839,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2021</span>
+                        <span>Copyright &copy; {%company_copyright%} 2024</span>
                     </div>
                 </div>
             </footer>

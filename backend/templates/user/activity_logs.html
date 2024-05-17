@@ -56,7 +56,7 @@
                 <div class="feed-item">
                     <div class="date">{{user_log.created_at}}</div>
                     <div class="text">Created user: {{user_log.created_user.first_name}} {{user_log.created_user.last_name}} {% if user_log.effected_user %}- Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
-                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %}</div>
+                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %} {% if user_log.reason %}: {{user_log.reason}}{% endif %}</div>
                 </div>
                 {% endfor %}
             </div>
