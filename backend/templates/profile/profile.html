@@ -522,7 +522,7 @@
             </div>
         {% endif %}
 
-        <div class="collapse multi-collapse {% if request.user|has_permission:"View User" %}{% elif request.user|has_permission:"View Path" %}{% elif request.user|has_permission:"View Role" %}{% else %}show{% endif %}" id="multiCollapseExample4">
+        <div class="collapse multi-collapse" id="multiCollapseExample4">
             <div class="card card-body">
                 <div class="card-header py-4 px-4" style="border-bottom: 0px solid #e3e6f0;">  
                     {% if user_logs %}

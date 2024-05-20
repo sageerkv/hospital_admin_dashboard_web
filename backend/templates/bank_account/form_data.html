@@ -1,0 +1,53 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+{% block Page_Content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Payment Account Table</h6>
+        <button onclick="window.location.href='{% url 'Add_account' %}'" class="btn btn-primary text-white" type="button">
+            <i class="fa fa-plus"></i> Add Payment Account
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    {% if bank_accounts %}
+                    <tr>
+                        <th>#</th>
+                        <th>Payment Account Type</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>#</th>
+                        <th>Payment Account Type</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for bank_account in bank_accounts %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{bank_account.Name}}</td>
+                        <td><label class="{% if bank_account.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                            {{ bank_account.status }}
+                        </label></td>
+                        <td><button onclick="window.location.href='{% url 'Edit_account' accountedit_id=bank_account.id %}'" class="btn btn-primary text-white" type="button">
+                            <i class="fa fa-edit"></i>
+                        </button></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <label for="" class="text-primary">No Matches Found</label>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock Page_Content %}

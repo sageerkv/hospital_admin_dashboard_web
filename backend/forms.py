@@ -129,3 +129,17 @@ class SiteSettingsForm(forms.ModelForm):
         super(SiteSettingsForm, self).__init__(*args, **kwargs)
         for name in self.fields.keys():
             self.fields[name].widget.attrs.update({'class':'form-control'})
+            
+            
+            
+class Accounts_Form(forms.ModelForm):
+    class Meta:
+        model=Accounts
+        fields="__all__"
+        exclude = ['Created_by']
+
+    def __init__(self, *args, **kwargs):
+        super(Accounts_Form, self).__init__(*args, **kwargs)
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({'class':'form-control'})
+            self.fields[name].required = True

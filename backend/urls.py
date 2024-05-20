@@ -36,4 +36,9 @@ urlpatterns = [
     path('site_settings',views.site_settings, name="site_settings"),
     path('add_site_settings',views.add_site_settings, name="add_site_settings"),
     path('edit_site_settings/<int:site_settingsedit_id>',views.edit_site_settings, name="edit_site_settings"),
+    
+    # bank accounts
+    path('View_account', views.View_account, name='View_account'),
+    path('Add_account', views.Add_account, name='Add_account'),
+    path('Edit_account/<accountedit_id>',views.Edit_account,name="Edit_account"),
 ]

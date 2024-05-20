@@ -140,3 +140,20 @@ class Site_settings(models.Model):
     class Meta:
         db_table = 'Site Settings'
         ordering = ['-company_name']
+        
+        
+class Accounts(models.Model):
+    Name = models.CharField(max_length=255,null=True, blank=True, unique=True)
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
+    Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_accounts', null=True, blank=True)
+    status = models.CharField(max_length=20, default="Active", choices=(
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive')
+    ), null=True, blank=True)
+    class Meta:
+        db_table = 'Account'
+        ordering = ['Name']
+
+    def __str__(self):
+        return f"{self.Name}"

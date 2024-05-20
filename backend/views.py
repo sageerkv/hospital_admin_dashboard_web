@@ -512,3 +512,86 @@ def edit_site_settings(request,site_settingsedit_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
+    
+    
+# bank account section
+@login_required(login_url="login")
+def View_account(request):
+    if request.user.is_superuser or PermisionsOf(request,'View Bank Account').has_permission():
+        context=get_menu(request)
+        bank_accounts=Accounts.objects.all().order_by("-id").order_by('Name')
+        # if request.method=="GET":
+        #     Name=request.GET.get('Name')
+        #     status=request.GET.get('status')
+        #     if Name:
+        #         bank_accounts=bank_accounts.filter(Name__icontains=Name)
+        #     if status:
+        #         bank_accounts =bank_accounts.filter(status__iexact=status.capitalize())
+
+        # paginator=Paginator(bank_accounts,20)
+        # page_num=request.GET.get('page')
+        # bank_accounts_page = paginator.get_page(page_num)
+        context['bank_accounts'] = bank_accounts
+        return render(request,'bank_account/form_data.html',context)
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+
+@login_required(login_url="login")
+def Add_account(request):
+    if request.user.is_superuser or PermisionsOf(request,'Add Bank Account').has_permission():
+        context=get_menu(request)
+        form=Accounts_Form()
+        context['form']=form
+        if request.method=="POST":
+            form=Accounts_Form(request.POST)
+
+            if form.is_valid():
+                instance=form.save(commit=False)
+                instance.Created_by = request.user
+                instance.save()
+                fnlog(request,None,'Admin_and_Staff',"Add Payment Account",'')
+                messages.success(request,account_add)
+                return redirect(View_account)
+            else:
+                print(form.errors)
+                context['form']=form
+                return render(request,'bank_account/add_form.html',context)
+                
+        return render(request,'bank_account/add_form.html',context)
+    
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+
+@login_required(login_url="login")
+def Edit_account(request,accountedit_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'Edit Bank Account').has_permission():
+        context=get_menu(request)
+        bank_account=Accounts.objects.get(id=accountedit_id)
+        form=Accounts_Form(request.POST or None,instance=bank_account)
+        context['form']=form
+        context['edit']=1
+
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.Created_by = request.user
+            instance.save()
+            
+            changed_data = {}
+            for field in form.changed_data:
+                new_value = form.cleaned_data.get(field)
+                if new_value is not None:
+                    changed_data[field] = new_value
+            changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+            
+            fnlog(request,None,'Admin_and_Staff',"Edit Payment Account",changes_str)
+            messages.success(request,account_edit)
+            return redirect(View_account)
+            
+        return render(request,'bank_account/add_form.html',context)
+
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin") 
