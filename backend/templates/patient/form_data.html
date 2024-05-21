@@ -1,0 +1,294 @@
+{% extends "index.html" %} 
+{% load static %} 
+{% load custom_filters %}
+{% block Page_Content %}
+<style>
+    .profile-images {
+        width: 86px;
+        height: auto;
+    }
+    .mobile{
+        display:none;
+    }
+    .grid-mob{
+        display:none;
+    }
+    .dot-active {
+        height: 12px;
+        width: 12px;
+        background-color: #00ff00;
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+        margin-left: -20px;
+        margin-top: 8px;
+      }
+    .dot-inactive {
+        height: 12px;
+        width: 12px;
+        background-color: red;
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+        margin-left: -20px;
+        margin-top: 8px;
+      }
+      @media(max-width: 1199px) {
+        .user-flex {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+    @media(max-width: 906px) {
+        .user-flex {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+    @media(max-width: 425px) {
+        .grid-web{
+            display:none;
+        }
+        .grid-mob{
+            display:block;
+        }
+    }
+    @media(max-width: 324px) {
+        .web{
+            display:none;
+        }
+        .mobile{
+            display:block;
+        }
+        .profile-images {
+            width: 66px;
+            height: auto;
+        }
+        .card-body {
+            font-size: 13.8px;
+        }
+        .btn-mobile{
+            display: flex;
+            column-gap: 5px;
+            margin-left: -30px;
+        }
+        .txt-mobile{
+            margin-left: -30px;
+        }
+    }
+</style>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-4 px-4">
+        <p style="display: flex;justify-content: end;column-gap: 10px;"> 
+            
+            {% if request.user.is_superuser %}
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample1"><i class="fa fa-th-large" aria-hidden="true"></i></button>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2"><i class="fa fa-th-list" aria-hidden="true"></i></button>
+            {% else %}
+                {% for i in request.user.role.permissions.all %}
+                    {% if i.path_name == 'View Patient' %}
+                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample1"><i class="fa fa-th-large" aria-hidden="true"></i></button>
+                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2"><i class="fa fa-th-list" aria-hidden="true"></i></button>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+        </p>
+
+        <div class="collapse multi-collapse show" id="multiCollapseExample1">
+              <div class="card-header d-flex justify-content-between" style="border: 1px solid #e3e6f0;align-items: baseline;">
+                    <h6 class="m-0 font-weight-bold text-primary">Patient Table</h6>
+                    {% if request.user.is_superuser %}
+                        <button onclick="window.location.href='{% url 'Add_patient' %}'" class="btn btn-primary text-white" type="button">
+                            <i class="fa fa-plus"></i> Add
+                        </button>
+                    {% else %}
+                        {% for i in request.user.role.permissions.all %}
+                            {% if i.path_name == 'Add Patient' %}
+                                <button onclick="window.location.href='{% url 'Add_patient' %}'" class="btn btn-primary text-white" type="button">
+                                    <i class="fa fa-plus"></i> Add
+                                </button>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% if patients %}
+                <div class="row">
+                    {% for patient in patients %}
+                    <div class="col-sm-4 p-2 user-flex">
+                        <div class="card">
+                            <div class="card-body" style="display: flex;column-gap: 35px;justify-content: space-between;">
+
+                                <div>
+                                    {% if patient.profile_img %}
+                                    <img class="img-xs rounded profile-images" src="{{ patient.profile_img.url }}" alt="Profile image">
+                                    {% else %}
+                                    <img class="img-xs rounded profile-images" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=86&name={{ patient.first_name }}&rounded=false&bold=true" alt="Profile image">
+                                    {% endif %}
+                                    {% if patient.status == 'Active' %}
+                                    <span class="dot-active" title="Status"></span>
+                                    {% else %}
+                                    <span class="dot-inactive" title="Status"></span>
+                                    {% endif %}
+                                    <p class="card-text d-flex justify-content-center" style="padding:5px;font-weight: 800;">{{ patient.User_id }}</p>
+                                </div>
+
+                                <div class="web mr-auto">
+                                    <h5 class="card-title">{{ patient.first_name }} {% if patient.last_name %}{{patient.last_name}}{% endif %}</h5>
+                                    <p class="card-text">{{ patient.Phone_number }}</p>
+
+                                    {% if request.user.is_superuser %}
+                                        <a href="{% url 'Patient_list' patientview_id=patient.id %}" class="btn btn-primary">View</a>
+                                    {% else %}
+                                        {% for i in request.user.role.permissions.all %}
+                                            {% if i.path_name == 'View Patient' %}
+                                                <a href="{% url 'Patient_list' patientview_id=patient.id %}" class="btn btn-primary">View</a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+
+                                </div>
+                                
+                                <div class="mobile">
+                                    <div class="txt-mobile">
+                                        <h5 class="card-title">{{ patient.first_name }} {% if patient.last_name %}{{patient.last_name}}{% endif %}</h5>
+                                        <p class="card-text">{{ patient.Phone_number }}</p>
+                                    </div>
+                                    <div class="btn-mobile">
+                                        {% if request.user.is_superuser %}
+                                        <a href="{% url 'Patient_list' patientview_id=patient.id %}" class="btn btn-primary">View</a>
+                                        {% else %}
+                                            {% for i in request.user.role.permissions.all %}
+                                                {% if i.path_name == 'View Patient' %}
+                                                    <a href="{% url 'Patient_list' patientview_id=patient.id %}" class="btn btn-primary">View</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    {% if request.user.is_superuser %}
+                                        <a href="{% url 'Edit_patient' patientedit_id=patient.id %}" style="font-size: 20px;color:{%company_constant_color%};"><i class="fas fa-edit"></i></a>
+                                    {% else %}
+                                        {% for i in request.user.role.permissions.all %}
+                                            {% if i.path_name == 'Edit Patient' %}
+                                                <a href="{% url 'Edit_patient' patientedit_id=patient.id %}" style="font-size: 20px;color:{%company_constant_color%};"><i class="fas fa-edit"></i></a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <label for="" class="text-primary row" style="display: flex;border: 1px solid #e3e6f0;margin: 0px;margin-top: 10px;padding: 20px;">No Matches Found</label>
+                {% endif %}
+        </div>
+
+        <div class="collapse multi-collapse" id="multiCollapseExample2">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Patient Table</h6>
+                {% if request.user.is_superuser %}
+                    <button onclick="window.location.href='{% url 'Add_patient' %}'" class="btn btn-primary text-white" type="button">
+                        <i class="fa fa-plus"></i> Add
+                    </button>
+                {% else %}
+                    {% for i in request.user.role.permissions.all %}
+                        {% if i.path_name == 'Add Patient' %}
+                            <button onclick="window.location.href='{% url 'Add_patient' %}'" class="btn btn-primary text-white" type="button">
+                                <i class="fa fa-plus"></i> Add
+                            </button>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            {% if patients %}
+                            <tr>
+                                <th>#</th>
+                                <th>Patient Id</th>
+                                <th>Name</th>
+                                <th>Place</th>
+                                <th>Phone Number</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>#</th>
+                                <th>Patient Id</th>
+                                <th>Name</th>
+                                <th>Place</th>
+                                <th>Phone Number</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{patient.User_id}}</td>
+                                <td>{{patient.first_name}} {% if patient.last_name %}{{patient.last_name}}{% endif %}</td>
+                                <td>{{patient.Place}}</td>
+                                <td>{{patient.Phone_number}}</td>
+                                <td><label class="{% if patient.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
+                                    {{ patient.status }}
+                                </label></td>
+                                <td>
+                                    {% if request.user.is_superuser %}
+                                        <button onclick="window.location.href='{% url 'Edit_patient' patientedit_id=patient.id %}'" class="btn btn-primary text-white" type="button">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                    {% else %}
+                                        {% for i in request.user.role.permissions.all %}
+                                            {% if i.path_name == 'Edit Patient' %}
+                                            <button onclick="window.location.href='{% url 'Edit_patient' patientedit_id=patient.id %}'" class="btn btn-primary text-white" type="button">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <label for="" class="text-primary">No Matches Found</label>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // JavaScript to toggle visibility of collapsible sections
+    document.addEventListener("DOMContentLoaded", function () {
+        const buttons = document.querySelectorAll("[data-toggle='collapse']");
+        buttons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                const target = document.querySelector(this.getAttribute("href"));
+                const allCollapse = document.querySelectorAll(".collapse.multi-collapse");
+                allCollapse.forEach(function (collapse) {
+                    if (collapse !== target) {
+                        collapse.classList.remove("show");
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock Page_Content %}

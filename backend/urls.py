@@ -41,4 +41,10 @@ urlpatterns = [
     path('View_account', views.View_account, name='View_account'),
     path('Add_account', views.Add_account, name='Add_account'),
     path('Edit_account/<accountedit_id>',views.Edit_account,name="Edit_account"),
+    
+    # patient and client
+    path('View_patient', views.View_patient, name='View_patient'),
+    path('Add_patient', views.Add_patient, name='Add_patient'),
+    path('Edit_patient/<patientedit_id>',views.Edit_patient,name="Edit_patient"),
+    path('Patient_list/<patientview_id>',views.Patient_list,name="Patient_list"),
 ]

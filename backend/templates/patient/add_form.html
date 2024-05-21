@@ -1,0 +1,84 @@
+{% extends "index.html" %} 
+{% load static %} 
+
+
+
+{% block Page_Content %}
+<div class="col-md-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">{% if edit %}Edit {% else %}Add{% endif %} Patient</h4>
+      {% comment %} <p class="card-description">
+        Role form
+      </p> {% endcomment %}
+      <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">First Name<span class="danger" style="color: red;"> *</span></label>
+              {{form.first_name}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              {{form.last_name}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Place<span class="danger" style="color: red;"> *</span></label>
+              {{form.Place}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Phone Number<span class="danger" style="color: red;"> *</span></label>
+              {{form.Phone_number}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Profile Image</label>
+              {{form.profile_img}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">          
+            <div class="form-group">
+              <label class="form-label">Status<span class="danger" style="color: red;"> *</span></label>
+              {{form.status}}
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Remark</label>
+              {{form.remark}}
+            </div>
+          </div>
+                    
+          
+
+        </div>
+     
+       <br>
+        <button type="submit" class="btn btn-primary me-2">Submit</button>
+        {% if not next_url %}
+        <button onclick="window.location.href='{% url 'Patient_list' patientview_id=patient.id %}'" class="btn btn-light" type="button">Cancel</button>
+        {% else %}
+        <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+   
+
+{% endblock Page_Content %}

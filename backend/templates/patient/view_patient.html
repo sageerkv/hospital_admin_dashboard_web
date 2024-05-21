@@ -1,0 +1,165 @@
+{% extends "index.html" %} 
+{% load static %} 
+{% load custom_filters %}
+
+
+{% block Page_Content %}
+<style>
+    @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+    /* apply a natural box layout model to all elements, but allowing components to change */
+    
+    .activity-feed {
+      padding: 15px;
+    }
+    .activity-feed .feed-item {
+      position: relative;
+      padding-bottom: 20px;
+      padding-left: 30px;
+      border-left: 2px solid #e4e8eb;
+    }
+    .activity-feed .feed-item:last-child {
+      border-color: transparent;
+    }
+    .activity-feed .feed-item:after {
+      content: "";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: -6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid #f37167;
+    }
+    .activity-feed .feed-item .date {
+      position: relative;
+      top: -5px;
+      color: #8c96a3;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+    .activity-feed .feed-item .text {
+      position: relative;
+      top: -3px;
+    }
+
+    .profile-image-container {
+      position: relative;
+      display: inline-block;
+  }
+  
+  .profile-image {
+      width: 106px;
+      height: auto;
+  }
+.dot-active {
+    height: 12px;
+    width: 12px;
+    background-color: #00ff00;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 8px;
+  }
+.dot-inactive {
+    height: 12px;
+    width: 12px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 8px;
+  }
+  @media(max-width: 324px) {
+    .card-body {
+        font-size: 13.8px;
+    }
+}
+</style>
+
+
+<div class="card shadow mb-4">
+  <div class="card-header py-4 px-4 d-flex justify-content-between">
+      <div  style="display: flex;align-items: center;column-gap: 23px;">
+          <div class="profile-image-container">
+                {% if view_patient.profile_img %}
+                    <img class="img-xs rounded profile-image" src="{{ view_patient.profile_img.url }}" alt="Profile image">
+                {% else %}
+                    <img class="img-xs rounded profile-image" src="https://ui-avatars.com/api/?background=a3a4cc&color=fff&size=106&name={{ view_patient.first_name }}&rounded=false&bold=true" alt="Profile image">
+                {% endif %}
+                {% if view_patient.status == 'Active' %}
+                <span class="dot-active" title="Status"></span>
+                {% else %}
+                <span class="dot-inactive" title="Status"></span>
+                {% endif %}
+          </div>
+          <h3 class="m-0 font-weight-bold text-primary">{{view_patient.first_name}} {{view_patient.last_name}}</h3>
+      </div>
+      <div style="display: grid;justify-items: end;">
+        <a href="{% url 'Edit_patient' patientedit_id=view_patient.id %}?next_url={{ request.path }}" style="font-size: 20px;color:{%company_constant_color%};" title="Edit"><i class="fas fa-edit"></i></a>
+    </div>
+  </div>
+  <div class="card-body">
+      <div class="row font-sizes">
+        <div class="col-3">
+            Patient Id
+          </div>:
+          <div class="col-8">
+              {% if view_patient.User_id %}
+              {{view_patient.User_id}}
+              {% endif %} 
+          </div><br>
+          <div class="col-3">
+            Place
+          </div>:
+          <div class="col-8">
+              {% if view_patient.Place %}
+              {{view_patient.Place}}
+              {% endif %} 
+          </div><br>
+          <div class="col-3">
+              Phone
+          </div>:
+          <div class="col-8">
+              {% if view_patient.Phone_number %}
+              {{view_patient.Phone_number}}
+              {% endif %} 
+          </div>
+          <div class="col-3">
+            Remark
+          </div>:
+          <div class="col-8">
+              {% if view_patient.remark %}
+              {{view_patient.remark}}
+              {% endif %} 
+          </div>
+      </div>
+  </div>
+</div>
+
+{% comment %} <div class="card shadow mb-4">
+    <div class="card-header py-4 px-4">  
+        <h2>Activity Log</h2>
+        {% if user_logs %}
+            
+            <div class="activity-feed">
+                {% for user_log in user_logs %}
+                <div class="feed-item">
+                    <div class="date">{{user_log.created_at}}</div>
+                    <div class="text">{% if user_log.effected_user %}Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
+                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %} {% if user_log.reason %}: {{user_log.reason}}{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+        {% else %}
+        <label for="" class="text-primary">No Matches Found</label>
+        {% endif %}
+    </div>
+</div> {% endcomment %}
+
+
+{% endblock Page_Content %}

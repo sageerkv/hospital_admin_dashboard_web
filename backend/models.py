@@ -157,3 +157,24 @@ class Accounts(models.Model):
 
     def __str__(self):
         return f"{self.Name}"
+    
+    
+    
+class Patient_And_Client(models.Model):
+    User_id = models.CharField(max_length=30, unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    Place = models.CharField(max_length=100, null=True, blank=True)
+    Phone_number=models.BigIntegerField(null=True, blank=True)  
+    status = models.CharField(max_length=20, default="Active", choices=(
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive')
+    ), null=True, blank=True)
+    Created_at = models.DateTimeField(auto_now=True)
+    Updated_at = models.DateTimeField(auto_now=True)
+    profile_img = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    remark=models.TextField(max_length=500,null=True,blank=True)
+    Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_patient_and_client', null=True, blank=True)
+    
+    def __str__(self):
+        return self.User_id

@@ -143,3 +143,24 @@ class Accounts_Form(forms.ModelForm):
         for name in self.fields.keys():
             self.fields[name].widget.attrs.update({'class':'form-control'})
             self.fields[name].required = True
+            
+            
+            
+class patient_and_client_Form(forms.ModelForm):
+    class Meta:
+        model=Patient_And_Client
+        fields="__all__"
+        exclude = ['Created_by','User_id']
+        widgets = {
+            'remark': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'style': 'height: auto;'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(patient_and_client_Form, self).__init__(*args, **kwargs)
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({'class':'form-control'})
+            self.fields[name].required = True
+        
+        self.fields['last_name'].required = False
+        self.fields['remark'].required = False
+        self.fields['profile_img'].required = False

@@ -121,6 +121,18 @@
         margin-left: -20px;
         margin-top: 8px;
       }
+      @media(max-width: 1199px) {
+        .user-flex {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+    @media(max-width: 906px) {
+        .user-flex {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
     @media(max-width: 425px) {
         .grid-web{
             display:none;
@@ -281,7 +293,7 @@
                 {% if user_profiles %}
                 <div class="row">
                     {% for user_profile in user_profiles %}
-                    <div class="col-sm-4 p-2">
+                    <div class="col-sm-4 p-2 user-flex">
                         <div class="card">
                             <div class="card-body" style="display: flex;column-gap: 35px;">
                                 <div>
@@ -328,8 +340,25 @@
                                         <p class="card-text">{{ user_profile.Phone_number }}</p>
                                     </div>
                                     <div class="btn-mobile">
-                                        <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
-                                        <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                        {% if request.user.is_superuser %}
+                                            <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                        {% else %}
+                                            {% for i in request.user.role.permissions.all %}
+                                                {% if i.path_name == 'Edit User' %}
+                                                    <a href="{% url 'Edit_user' useredit_id=user_profile.id %}" class="btn btn-primary">Edit</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {% if request.user.is_superuser %}
+                                            <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                        {% else %}
+                                            {% for i in request.user.role.permissions.all %}
+                                                {% if i.path_name == 'View User' %}
+                                                    <a href="{% url 'User_list' userview_id=user_profile.id %}" class="btn btn-primary">View</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

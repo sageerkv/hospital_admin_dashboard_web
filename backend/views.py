@@ -230,11 +230,11 @@ def Edit_user(request,useredit_id):
                 
                 if next_url:
                     messages.success(request,profile_edit)
-                    fnlog(request,edit_user,'Edited_Profile',changes_str,'')
+                    fnlog(request,edit_user,'Edited_Profile',f"Changes : {changes_str}",'')
                     return redirect(next_url)  # Redirect to the previous page
                 else:
                     messages.success(request,user_edit)
-                    fnlog(request,edit_user,'Edited_User',changes_str,'')
+                    fnlog(request,edit_user,'Edited_User',f"Changes : {changes_str}",'')
                     return redirect("View_user")
         else:
             form = EditUserForm(instance=users)   
@@ -340,7 +340,7 @@ def Edit_path(request,pathedit_id):
                     changed_data[field] = new_value
             changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
             
-            fnlog(request,None,'Admin_and_Staff',"Edit Path",changes_str)
+            fnlog(request,None,'Admin_and_Staff',"Edit Path",f"Changes : {changes_str}")
             messages.success(request,path_edit)
             return redirect(Profile)
         
@@ -401,7 +401,7 @@ def Edit_role(request,roleedit_id):
                     changed_data[field] = new_value
             changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
             
-            fnlog(request,None,'Admin_and_Staff',"Edit Role",changes_str)
+            fnlog(request,None,'Admin_and_Staff',"Edit Role",f"Changes : {changes_str}")
             messages.success(request,role_edit)
             return redirect(Profile)
             
@@ -503,7 +503,7 @@ def edit_site_settings(request,site_settingsedit_id):
                     changed_data[field] = new_value
             changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
             
-            fnlog(request,None,'Admin_and_Staff',"Edit Site Settings",changes_str)
+            fnlog(request,None,'Admin_and_Staff',"Edit Site Settings",f"Changes : {changes_str}")
             messages.success(request,site_settings_edit)
             return redirect(site_settings)
             
@@ -586,7 +586,7 @@ def Edit_account(request,accountedit_id):
                     changed_data[field] = new_value
             changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
             
-            fnlog(request,None,'Admin_and_Staff',"Edit Payment Account",changes_str)
+            fnlog(request,None,'Admin_and_Staff',"Edit Payment Account",f"Changes : {changes_str}")
             messages.success(request,account_edit)
             return redirect(View_account)
             
@@ -595,3 +595,126 @@ def Edit_account(request,accountedit_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin") 
+    
+    
+    
+# patient and client 
+    # patient
+@login_required(login_url="login")
+def View_patient(request):
+    if request.user.is_superuser or PermisionsOf(request,'View Patient').has_permission():
+        context=get_menu(request)
+        patients=Patient_And_Client.objects.all().order_by("-User_id")
+        # if request.method=="GET":
+        #     Name=request.GET.get('Name')
+        #     status=request.GET.get('status')
+        #     if Name:
+        #         bank_accounts=bank_accounts.filter(Name__icontains=Name)
+        #     if status:
+        #         bank_accounts =bank_accounts.filter(status__iexact=status.capitalize())
+
+        # paginator=Paginator(bank_accounts,20)
+        # page_num=request.GET.get('page')
+        # bank_accounts_page = paginator.get_page(page_num)
+        context['patients'] = patients
+        return render(request,'patient/form_data.html',context)
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+
+def generate_user_id():
+    prefix = "P-"
+    last_patient = Patient_And_Client.objects.filter(User_id__startswith=prefix).order_by('User_id').last()
+    if last_patient:
+        last_id = int(last_patient.User_id.split('-')[-1])
+        new_id = last_id + 1
+    else:
+        new_id = 1
+    return f"{prefix}{new_id:02d}"
+
+
+@login_required(login_url="login")
+def Add_patient(request):
+    if request.user.is_superuser or PermisionsOf(request,'Add Patient').has_permission():
+        context=get_menu(request)
+        form=patient_and_client_Form()
+        context['form']=form
+        if request.method=="POST":
+            form=patient_and_client_Form(request.POST, request.FILES)
+
+            if form.is_valid():
+                instance=form.save(commit=False)
+                instance.Created_by = request.user
+                instance.User_id = generate_user_id()
+                instance.save()
+                fnlog(request,None,'Admin_and_Staff',"Add Patient",f"{instance.first_name} - {instance.User_id}")
+                messages.success(request,patient_add)
+                return redirect(View_patient)
+            else:
+                print(form.errors)
+                context['form']=form
+                return render(request,'patient/add_form.html',context)
+                
+        return render(request,'patient/add_form.html',context)
+    
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+
+@login_required(login_url="login")
+def Edit_patient(request,patientedit_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'Edit Patient').has_permission():
+        next_url = request.GET.get('next_url', None)
+        print('-----------',next_url)
+        context=get_menu(request)
+        patient = get_object_or_404(Patient_And_Client, id=patientedit_id)
+        form=patient_and_client_Form(request.POST or None, request.FILES or None, instance=patient)
+        context['form']=form
+        context['edit']=1
+        context['patient'] = patient
+
+        if form.is_valid():
+            instance=form.save(commit=False)
+            instance.Created_by = request.user
+            instance.User_id = patient.User_id
+            instance.save()
+            
+            changed_data = {}
+            for field in form.changed_data:
+                new_value = form.cleaned_data.get(field)
+                if new_value is not None:
+                    changed_data[field] = new_value
+            changes_str = ", ".join([f"{field}: {value}" for field, value in changed_data.items()])
+            
+            # return redirect(View_patient)
+            if next_url:
+                messages.success(request,patient_edit)
+                fnlog(request,None,'Admin_and_Staff',f"Edit Patient : {instance.first_name} - {instance.User_id}",f"Changes : {changes_str}")
+                return redirect(next_url)  # Redirect to the previous page
+            else:
+                messages.success(request,patient_edit)
+                fnlog(request,None,'Admin_and_Staff',f"Edit Patient : {instance.first_name} - {instance.User_id}",f"Changes : {changes_str}")
+                return redirect(View_patient)
+            
+        return render(request,'patient/add_form.html',context)
+
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
+    
+    
+@login_required(login_url="login")
+def Patient_list(request,patientview_id):
+
+    if request.user.is_superuser or PermisionsOf(request,'View Patient').has_permission():
+        context=get_menu(request)
+        view_patient=Patient_And_Client.objects.get(id=patientview_id)  
+        # user_logs=UserLog.objects.filter(created_user=view_patient.id)
+        context['view_patient']=view_patient 
+        # context['user_logs']=user_logs   
+        return render(request,'patient/view_patient.html',context)
+
+    else:
+        messages.error(request,page_deny)
+        return redirect("admin")
