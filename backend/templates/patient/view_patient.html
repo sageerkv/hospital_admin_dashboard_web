@@ -73,6 +73,16 @@
     margin-left: -20px;
     margin-top: 8px;
   }
+  /* Custom CSS for horizontal alignment of radio buttons */
+.radio-group.d-flex {
+    display: flex;
+    align-items: center;
+}
+
+.radio-group .form-check {
+    margin-right: 15px;
+}
+
   @media(max-width: 324px) {
     .card-body {
         font-size: 13.8px;
@@ -96,7 +106,7 @@
                 <span class="dot-inactive" title="Status"></span>
                 {% endif %}
           </div>
-          <h3 class="m-0 font-weight-bold text-primary">{{view_patient.first_name}} {{view_patient.last_name}}</h3>
+          <h3 class="m-0 font-weight-bold text-primary">{{view_patient.first_name}} {% if view_patient.last_name %}{{view_patient.last_name}}{% endif %}</h3>
       </div>
       <div style="display: grid;justify-items: end;">
         <a href="{% url 'Edit_patient' patientedit_id=view_patient.id %}?next_url={{ request.path }}" style="font-size: 20px;color:{%company_constant_color%};" title="Edit"><i class="fas fa-edit"></i></a>
@@ -139,26 +149,171 @@
       </div>
   </div>
 </div>
+<div class="card shadow mb-4">
+  <div class="card-header py-4 px-4">
+      <p style="display: flex;justify-content: end;column-gap: 10px;"> 
+          
+          {% if request.user.is_superuser %}
+              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample1">Patient Details</button>
+              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Payment</button>
+          {% else %}
+              {% for i in request.user.role.permissions.all %}
+                  {% if i.path_name == 'Edit Patient' %}
+                  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample1">Patient Details</button>
+                  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Payment</button>
+                  {% endif %}
+              {% endfor %}
+          {% endif %}
 
-{% comment %} <div class="card shadow mb-4">
-    <div class="card-header py-4 px-4">  
-        <h2>Activity Log</h2>
-        {% if user_logs %}
-            
-            <div class="activity-feed">
-                {% for user_log in user_logs %}
-                <div class="feed-item">
-                    <div class="date">{{user_log.created_at}}</div>
-                    <div class="text">{% if user_log.effected_user %}Effected user: {{user_log.effected_user.first_name}} {{user_log.effected_user.last_name}}{% endif %}</div>
-                    <div class="text">{{user_log.log_type}} {% if user_log.remarks %}- {{user_log.remarks}}{% endif %} {% if user_log.reason %}: {{user_log.reason}}{% endif %}</div>
-                </div>
-                {% endfor %}
+      </p>
+
+      <div class="collapse multi-collapse show" id="multiCollapseExample1">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h4 class="card-title">Patient Details</h4>
+              <h5 class="card-description">
+                {{ view_patient.User_id }}
+              </h5>
             </div>
-            
-        {% else %}
-        <label for="" class="text-primary">No Matches Found</label>
-        {% endif %}
+            <hr>
+            <form action="" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-6 col-lg-6">
+                  <div class="form-group">
+                    <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
+                    {{ form1.Date }}
+                  </div>
+                </div>
+      
+                <div class="col-md-12 col-lg-12">
+                  <div class="form-group">
+                    <label class="form-label">Description</label>
+                    {{ form1.Remark }}
+                  </div>
+                </div>
+              </div>
+              <br>
+              <button type="submit"  name="form1_submit" class="btn btn-primary me-2">Submit</button>
+              <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="collapse multi-collapse" id="multiCollapseExample2">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h4 class="card-title">Payment Form</h4>
+              {% if patient.amount %}
+              <h5 class="card-description">
+                {{ patient.transaction_id }}
+              </h5>
+              {% endif %}
+            </div>
+            <hr>
+            <form action="" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-6 col-lg-6">
+                  <div class="form-group">
+                    <label class="form-label">Amount<span class="danger" style="color: red;"> *</span></label>
+                    {{ form2.amount }}
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-6">
+                  <div class="form-group">
+                    <label class="form-label">Discount</label>
+                    {{ form2.Discount }}
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-12">
+                  <div class="form-group">
+                    <label class="form-label">Advance</label>
+                    {{ form2.Advance }}
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-12">
+                  <div class="form-group">
+                    <label class="form-label">Payment Type</label>
+                    <div class="radio-group d-flex">
+                      {% for radio in form2.Account %}
+                        <div class="form-check me-3">
+                          {{ radio.tag }}
+                          <label class="form-check-label">{{ radio.choice_label }}</label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+                
+
+              </div>
+              <br>
+              <button type="submit" name="form2_submit" class="btn btn-primary me-2">Submit</button>
+              <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+<script>
+  // JavaScript to toggle visibility of collapsible sections
+  document.addEventListener("DOMContentLoaded", function () {
+      const buttons = document.querySelectorAll("[data-toggle='collapse']");
+      buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+              const target = document.querySelector(this.getAttribute("href"));
+              const allCollapse = document.querySelectorAll(".collapse.multi-collapse");
+              allCollapse.forEach(function (collapse) {
+                  if (collapse !== target) {
+                      collapse.classList.remove("show");
+                  }
+              });
+          });
+      });
+  });
+</script>
+{% comment %} <div class="col-md-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <h4 class="card-title">Patient Details</h4>
+        <h4 class="card-description">
+          {{ patient.transaction_id }}
+        </h4>
+      </div>
+      <hr>
+      <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6 col-lg-6">
+            <div class="form-group">
+              <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
+              {{ form.Date }}
+            </div>
+          </div>
+
+          <div class="col-md-12 col-lg-12">
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              {{ form.Remark }}
+            </div>
+          </div>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary me-2">Submit</button>
+        <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
+      </form>
     </div>
+  </div>
 </div> {% endcomment %}
 
 

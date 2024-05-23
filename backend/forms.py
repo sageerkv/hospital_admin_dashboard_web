@@ -164,3 +164,24 @@ class patient_and_client_Form(forms.ModelForm):
         self.fields['last_name'].required = False
         self.fields['remark'].required = False
         self.fields['profile_img'].required = False
+        
+class TransactionsForm1(forms.ModelForm):
+    class Meta:
+        model = Transactions
+        fields = ['Date', 'Remark']
+        widgets = {
+            'Date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'Remark': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
+        }
+
+class TransactionsForm2(forms.ModelForm):
+    class Meta:
+        model = Transactions
+        fields = ['amount', 'Discount', 'Advance', 'Account']
+        widgets = {
+            'amount': forms.TextInput(attrs={'class': 'form-control'}),
+            'Discount': forms.TextInput(attrs={'class': 'form-control'}),
+            'Advance': forms.TextInput(attrs={'class': 'form-control'}),
+            'Account': forms.RadioSelect(attrs={'class': 'form-control'}),
+        }
+        

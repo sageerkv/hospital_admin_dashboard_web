@@ -71,9 +71,13 @@
        <br>
         <button type="submit" class="btn btn-primary me-2">Submit</button>
         {% if not next_url %}
-        <button onclick="window.location.href='{% url 'Patient_list' patientview_id=patient.id %}'" class="btn btn-light" type="button">Cancel</button>
+          {% if patient and patient.id %}
+            <button onclick="window.location.href='{% url 'Patient_list' patientview_id=patient.id %}'" class="btn btn-light" type="button">Cancel</button>
+          {% else %}
+            <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
+          {% endif %}
         {% else %}
-        <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
+          <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
         {% endif %}
       </form>
     </div>

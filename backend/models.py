@@ -178,3 +178,40 @@ class Patient_And_Client(models.Model):
     
     def __str__(self):
         return self.User_id
+    
+    
+class Transactions(models.Model):
+    Transactions_type = (
+                (0, "Income"),
+                (1, "Expense"),
+                (2, "Transfer"),
+    )
+    User_type = (
+                (0, "Patient"),
+                (1, "Client"),
+    )
+    transaction_id = models.CharField(max_length=255, blank=True)
+    Type = models.IntegerField(choices=User_type, blank=True, default=0)
+    Transaction_type = models.IntegerField(choices=Transactions_type, blank=True, default=0)
+    Date = models.DateField()
+    Account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name='Accounts', null=True, blank=True)
+    amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    Advance = models.DecimalField(max_digits=19, decimal_places=2,default=0)
+    Total_amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    Discount = models.DecimalField(max_digits=19, decimal_places=2,default=0)
+    Remark = models.TextField(null=True, blank=True)
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
+    Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_transactions', null=True, blank=True)
+    User = models.ForeignKey(Patient_And_Client, on_delete=models.CASCADE, related_name='Patient_And_Client_transactions', null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+                
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'Transactions'
+        ordering = ['Type']
+
+    def __str__(self):
+        return f"{self.Type} - {self.Created_by}"

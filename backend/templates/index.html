@@ -112,6 +112,18 @@
           transform: translateX(100%);
         }
       }
+      .mob-add{
+        display:none;
+    }
+      @media(max-width: 1054px) {
+        .web-add{
+            display:none;
+        }
+        .mob-add{
+            display:block;
+            margin-left: 10px;
+        }
+    }
           
 </style>
 <body id="page-top">
@@ -269,7 +281,13 @@
                             </div>
                         </div>
                     </form>
+                    <button onclick="window.location.href='{% url 'Add_patient' %}'" class="btn btn-primary web-add" type="button">
+                        <i class="fas fa-plus"></i> Add Patient
+                    </button>
 
+                    <button onclick="window.location.href='{% url 'Add_patient' %}'" class="btn btn-primary mob-add" type="button">
+                        <i class="fas fa-hospital-user"></i>
+                    </button>
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 

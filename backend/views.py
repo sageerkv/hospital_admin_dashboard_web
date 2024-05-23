@@ -633,6 +633,15 @@ def generate_user_id():
     return f"{prefix}{new_id:02d}"
 
 
+def generate_transaction_id():
+    last_transaction = Transactions.objects.all().order_by('id').last()
+    if not last_transaction or not last_transaction.transaction_id.startswith('invd-'):
+        return 'invd-01'
+    new_number = int(last_transaction.transaction_id.split('-')[2]) + 1
+    return f'invd-{new_number:02d}'
+
+
+
 @login_required(login_url="login")
 def Add_patient(request):
     if request.user.is_superuser or PermisionsOf(request,'Add Patient').has_permission():
@@ -647,6 +656,23 @@ def Add_patient(request):
                 instance.Created_by = request.user
                 instance.User_id = generate_user_id()
                 instance.save()
+                
+                transaction_id = generate_transaction_id()
+                
+                # Create a new instance for the transfer to the 'to' account
+                to_instance = Transactions(
+                    transaction_id=transaction_id,
+                    Type=0,
+                    Transaction_type=0,
+                    Date=timezone.now().date(),
+                    Created_by=request.user,
+                    User=instance
+                    
+                )
+                to_instance.save()
+                
+                
+                
                 fnlog(request,None,'Admin_and_Staff',"Add Patient",f"{instance.first_name} - {instance.User_id}")
                 messages.success(request,patient_add)
                 return redirect(View_patient)
@@ -711,7 +737,30 @@ def Patient_list(request,patientview_id):
         context=get_menu(request)
         view_patient=Patient_And_Client.objects.get(id=patientview_id)  
         # user_logs=UserLog.objects.filter(created_user=view_patient.id)
-        context['view_patient']=view_patient 
+        
+        
+        patient = Transactions.objects.get(User=view_patient)
+        if request.method == 'POST':
+            form1 = TransactionsForm1(request.POST, instance=patient)
+            form2 = TransactionsForm2(request.POST, instance=patient)
+            if 'form1_submit' in request.POST:
+                form1.save()
+                messages.success(request, "Patient data edited successfully.")
+                fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+                return redirect('Patient_list', patientview_id=patientview_id)
+            elif 'form2_submit' in request.POST:
+                form2.save()
+                messages.success(request, "Payment add successfully.")
+                fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+                return redirect('Patient_list', patientview_id=patientview_id)
+        else:
+            form1 = TransactionsForm1(instance=patient)
+            form2 = TransactionsForm2(instance=patient)
+
+        context['view_patient'] = view_patient
+        context['form1'] = form1
+        context['form2'] = form2
+        context['patient'] = patient
         # context['user_logs']=user_logs   
         return render(request,'patient/view_patient.html',context)
 
