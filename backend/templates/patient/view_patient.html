@@ -146,6 +146,7 @@
               {{view_patient.remark}}
               {% endif %} 
           </div>
+          <a href="{% url 'view_patient_pdf' patientview_id=view_patient.id %}">View Patient Details as PDF</a>
       </div>
   </div>
 </div>

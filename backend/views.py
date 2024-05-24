@@ -783,48 +783,50 @@ def Patient_list(request,patientview_id):
     
  
  
-# import io
-# from django.http import HttpResponse
-# from django.template.loader import get_template
-# from reportlab.lib.pagesizes import letter
-# from reportlab.platypus import SimpleDocTemplate, Paragraph
-# from reportlab.lib.styles import getSampleStyleSheet
-# from reportlab.pdfbase.ttfonts import TTFont
-# from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from django.http import HttpResponse
+from django.template.loader import get_template
+from .models import Patient_And_Client
+import io
+from django.template.loader import render_to_string
+
+def view_patient_details_as_pdf(request, patientview_id):
+    # Retrieve patient details
+    view_patient = Patient_And_Client.objects.get(id=patientview_id)
+
+    # Render the template with patient details
+    context = {'view_patient': view_patient}
+    html_content = render_to_string('patient/pdf.html', context)
     
-# def download_patient_details_as_pdf(request, patientview_id):
-#     # Retrieve patient details
-#     view_patient = Patient_And_Client.objects.get(id=patientview_id)
 
-#     # Render the template with patient details
-#     template = get_template('patient/pdf.html')
-#     context = {'view_patient': view_patient}
-#     html_content = template.render(context)
+    # Create a buffer to store the PDF
+    buffer = io.BytesIO()
 
-#     # Create a buffer to store the PDF
-#     pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))  # Replace 'arial.ttf' with the path to an Arabic font file
+    # Create a new PDF document
+    pdf = SimpleDocTemplate(buffer, pagesize=letter)
 
-#     # Create a buffer to store the PDF
-#     buffer = io.BytesIO()
+    # Configure font for Arabic text
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.pdfbase import pdfmetrics
 
-#     # Create a new PDF document
-#     pdf = SimpleDocTemplate(buffer, pagesize=letter)
-#     elements = []
+    # You need to provide a path to an Arabic font file
+    arabic_font_path = 'Amiri-Regular.ttf'
+    pdfmetrics.registerFont(TTFont('Arabic', arabic_font_path))
 
-#     # Add patient details to the PDF
-#     styles = getSampleStyleSheet()
-#     arabic_style = styles["Normal"]
-#     arabic_style.fontName = 'Arial'
-#     arabic_style.fontSize = 12  # Adjust font size as needed
+    # Add patient details to the PDF
+    arabic_style = ParagraphStyle(
+        'arabic',
+        fontName='Arabic',  # Use the name registered with pdfmetrics
+        fontSize=12,  # Adjust font size as needed
+        direction='RTL'  # Right-to-left direction
+    )
+    paragraph = Paragraph(html_content, arabic_style)
+    pdf.build([paragraph])
 
-#     paragraph = Paragraph(html_content, arabic_style)
-#     elements.append(paragraph)
-
-#     # Build the PDF
-#     pdf.build(elements)
-
-#     # Close the PDF
-#     buffer.seek(0)
-#     response = HttpResponse(buffer, content_type='application/pdf')
-#     response['Content-Disposition'] = 'attachment; filename="patient_details.pdf"'
-#     return response
+    # Close the PDF
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="patient_details.pdf"'
+    return response
