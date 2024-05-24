@@ -742,20 +742,33 @@ def Patient_list(request,patientview_id):
         patient = Transactions.objects.get(User=view_patient)
         if request.method == 'POST':
             form1 = TransactionsForm1(request.POST, instance=patient)
-            form2 = TransactionsForm2(request.POST, instance=patient)
             if 'form1_submit' in request.POST:
-                form1.save()
+                instance=form1.save(commit=False)
+                instance.save()
+                
                 messages.success(request, "Patient data edited successfully.")
                 fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
                 return redirect('Patient_list', patientview_id=patientview_id)
             elif 'form2_submit' in request.POST:
-                form2.save()
-                messages.success(request, "Payment add successfully.")
-                fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
-                return redirect('Patient_list', patientview_id=patientview_id)
+                form2 = PaymentForm2(request.POST)
+                if form2.is_valid():
+                    instance2 = form2.save(commit=False)
+                    instance2.Created_by = request.user
+                    instance2.Transactions_id = patient
+                    instance2.Total_amount = instance2.amount - instance2.Discount
+                    instance2.Total_amount -= instance2.Advance
+                    instance2.save()
+                    print(form2.errors)
+                    
+                    patient.Total_amount += instance2.Total_amount
+                    patient.save()
+
+                    messages.success(request, "Payment add successfully.")
+                    fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+                    return redirect('Patient_list', patientview_id=patientview_id)
         else:
             form1 = TransactionsForm1(instance=patient)
-            form2 = TransactionsForm2(instance=patient)
+            form2 = PaymentForm2(instance=patient)
 
         context['view_patient'] = view_patient
         context['form1'] = form1
@@ -767,3 +780,51 @@ def Patient_list(request,patientview_id):
     else:
         messages.error(request,page_deny)
         return redirect("admin")
+    
+ 
+ 
+# import io
+# from django.http import HttpResponse
+# from django.template.loader import get_template
+# from reportlab.lib.pagesizes import letter
+# from reportlab.platypus import SimpleDocTemplate, Paragraph
+# from reportlab.lib.styles import getSampleStyleSheet
+# from reportlab.pdfbase.ttfonts import TTFont
+# from reportlab.pdfbase import pdfmetrics
+    
+# def download_patient_details_as_pdf(request, patientview_id):
+#     # Retrieve patient details
+#     view_patient = Patient_And_Client.objects.get(id=patientview_id)
+
+#     # Render the template with patient details
+#     template = get_template('patient/pdf.html')
+#     context = {'view_patient': view_patient}
+#     html_content = template.render(context)
+
+#     # Create a buffer to store the PDF
+#     pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))  # Replace 'arial.ttf' with the path to an Arabic font file
+
+#     # Create a buffer to store the PDF
+#     buffer = io.BytesIO()
+
+#     # Create a new PDF document
+#     pdf = SimpleDocTemplate(buffer, pagesize=letter)
+#     elements = []
+
+#     # Add patient details to the PDF
+#     styles = getSampleStyleSheet()
+#     arabic_style = styles["Normal"]
+#     arabic_style.fontName = 'Arial'
+#     arabic_style.fontSize = 12  # Adjust font size as needed
+
+#     paragraph = Paragraph(html_content, arabic_style)
+#     elements.append(paragraph)
+
+#     # Build the PDF
+#     pdf.build(elements)
+
+#     # Close the PDF
+#     buffer.seek(0)
+#     response = HttpResponse(buffer, content_type='application/pdf')
+#     response['Content-Disposition'] = 'attachment; filename="patient_details.pdf"'
+#     return response

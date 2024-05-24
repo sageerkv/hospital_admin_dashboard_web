@@ -174,14 +174,13 @@ class TransactionsForm1(forms.ModelForm):
             'Remark': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
         }
 
-class TransactionsForm2(forms.ModelForm):
+class PaymentForm2(forms.ModelForm):
     class Meta:
-        model = Transactions
-        fields = ['amount', 'Discount', 'Advance', 'Account']
+        model = Payment
+        fields = ['amount', 'Discount', 'Advance']
         widgets = {
             'amount': forms.TextInput(attrs={'class': 'form-control'}),
             'Discount': forms.TextInput(attrs={'class': 'form-control'}),
             'Advance': forms.TextInput(attrs={'class': 'form-control'}),
-            'Account': forms.RadioSelect(attrs={'class': 'form-control'}),
         }
         

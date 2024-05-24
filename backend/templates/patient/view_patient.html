@@ -207,9 +207,10 @@
           <div class="card-body">
             <div class="d-flex justify-content-between">
               <h4 class="card-title">Payment Form</h4>
-              {% if patient.amount %}
+              {% if Patient.Total_amount %}
               <h5 class="card-description">
-                {{ patient.transaction_id }}
+                {{ Patient.Transactions_id }}
+                Total amount={{ Patient.Total_amount }}
               </h5>
               {% endif %}
             </div>
@@ -217,37 +218,32 @@
             <form action="" method="POST" enctype="multipart/form-data">
               {% csrf_token %}
               <div class="row">
-                <div class="col-md-6 col-lg-6">
+                <div class="col-md-4 col-lg-4">
                   <div class="form-group">
                     <label class="form-label">Amount<span class="danger" style="color: red;"> *</span></label>
                     {{ form2.amount }}
                   </div>
                 </div>
-                <div class="col-md-6 col-lg-6">
+                <div class="col-md-4 col-lg-4">
                   <div class="form-group">
                     <label class="form-label">Discount</label>
                     {{ form2.Discount }}
                   </div>
                 </div>
 
-                <div class="col-md-12 col-lg-12">
+                <div class="col-md-3 col-lg-3">
                   <div class="form-group">
                     <label class="form-label">Advance</label>
                     {{ form2.Advance }}
                   </div>
                 </div>
 
-                <div class="col-md-12 col-lg-12">
+                <div class="col-md-1 col-lg-1">
                   <div class="form-group">
-                    <label class="form-label">Payment Type</label>
-                    <div class="radio-group d-flex">
-                      {% for radio in form2.Account %}
-                        <div class="form-check me-3">
-                          {{ radio.tag }}
-                          <label class="form-check-label">{{ radio.choice_label }}</label>
-                        </div>
-                      {% endfor %}
-                    </div>
+                    <label class="form-label"><br></label>
+                    <button class="btn btn-primary text-white form-control" type="button">
+                      <i class="fa fa-plus"></i>
+                  </button>
                   </div>
                 </div>
                 
@@ -281,40 +277,7 @@
       });
   });
 </script>
-{% comment %} <div class="col-md-12 grid-margin stretch-card">
-  <div class="card">
-    <div class="card-body">
-      <div class="d-flex justify-content-between">
-        <h4 class="card-title">Patient Details</h4>
-        <h4 class="card-description">
-          {{ patient.transaction_id }}
-        </h4>
-      </div>
-      <hr>
-      <form action="" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="row">
-          <div class="col-md-6 col-lg-6">
-            <div class="form-group">
-              <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
-              {{ form.Date }}
-            </div>
-          </div>
 
-          <div class="col-md-12 col-lg-12">
-            <div class="form-group">
-              <label class="form-label">Description</label>
-              {{ form.Remark }}
-            </div>
-          </div>
-        </div>
-        <br>
-        <button type="submit" class="btn btn-primary me-2">Submit</button>
-        <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
-      </form>
-    </div>
-  </div>
-</div> {% endcomment %}
 
 
 {% endblock Page_Content %}

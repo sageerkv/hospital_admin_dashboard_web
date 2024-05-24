@@ -3,7 +3,6 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import BaseUserManager
 
-
 class Path(models.Model):
     path_name = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=20, default="Active", choices=(
@@ -194,16 +193,13 @@ class Transactions(models.Model):
     Type = models.IntegerField(choices=User_type, blank=True, default=0)
     Transaction_type = models.IntegerField(choices=Transactions_type, blank=True, default=0)
     Date = models.DateField()
-    Account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name='Accounts', null=True, blank=True)
-    amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
-    Advance = models.DecimalField(max_digits=19, decimal_places=2,default=0)
-    Total_amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
-    Discount = models.DecimalField(max_digits=19, decimal_places=2,default=0)
     Remark = models.TextField(null=True, blank=True)
     Created_at = models.DateTimeField(auto_now_add=True)
     Updated_at = models.DateTimeField(auto_now=True)
     Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_transactions', null=True, blank=True)
     User = models.ForeignKey(Patient_And_Client, on_delete=models.CASCADE, related_name='Patient_And_Client_transactions', null=True, blank=True)
+    Total_amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    Account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name='Accounts', null=True, blank=True)
     
     def save(self, *args, **kwargs):
                 
@@ -214,4 +210,27 @@ class Transactions(models.Model):
         ordering = ['Type']
 
     def __str__(self):
-        return f"{self.Type} - {self.Created_by}"
+        return f"{self.transaction_id} - {self.Created_by}"
+    
+    
+    
+class Payment(models.Model):
+    amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    Advance = models.DecimalField(max_digits=19, decimal_places=2,default=0)
+    Total_amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    Discount = models.DecimalField(max_digits=19, decimal_places=2,default=0)
+    Remark = models.TextField(null=True, blank=True)
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
+    Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_payment', null=True, blank=True)
+    Transactions_id = models.ForeignKey(Transactions, on_delete=models.CASCADE, related_name='Payment', null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)   
+
+    class Meta:
+        db_table = 'Payment'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"{self.Transactions_id} - {self.Created_by}"
