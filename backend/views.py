@@ -730,103 +730,87 @@ def Edit_patient(request,patientedit_id):
         return redirect("admin")
     
     
-@login_required(login_url="login")
-def Patient_list(request,patientview_id):
+from django.db.models import F
 
-    if request.user.is_superuser or PermisionsOf(request,'View Patient').has_permission():
-        context=get_menu(request)
-        view_patient=Patient_And_Client.objects.get(id=patientview_id)  
-        # user_logs=UserLog.objects.filter(created_user=view_patient.id)
-        
+@login_required(login_url="login")
+def Patient_list(request, patientview_id):
+
+    if request.user.is_superuser or PermisionsOf(request, 'View Patient').has_permission():
+        context = get_menu(request)
+        view_patient = Patient_And_Client.objects.get(id=patientview_id)
         
         patient = Transactions.objects.get(User=view_patient)
+        payments = Payment.objects.filter(Transactions_id=patient)
+
         if request.method == 'POST':
             form1 = TransactionsForm1(request.POST, instance=patient)
             if 'form1_submit' in request.POST:
-                instance=form1.save(commit=False)
-                instance.save()
-                
+                instance = form1.save()
                 messages.success(request, "Patient data edited successfully.")
                 fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
                 return redirect('Patient_list', patientview_id=patientview_id)
+            
             elif 'form2_submit' in request.POST:
-                form2 = PaymentForm2(request.POST)
-                if form2.is_valid():
-                    instance2 = form2.save(commit=False)
-                    instance2.Created_by = request.user
-                    instance2.Transactions_id = patient
-                    instance2.Total_amount = instance2.amount - instance2.Discount
-                    instance2.Total_amount -= instance2.Advance
-                    instance2.save()
-                    print(form2.errors)
-                    
-                    patient.Total_amount += instance2.Total_amount
-                    patient.save()
+                form2_list = []
+                form_count = len(request.POST.getlist('amount'))
+                for i in range(form_count):
+                    form2_data = {
+                        'amount': request.POST.getlist('amount')[i],
+                        'Discount': request.POST.getlist('Discount')[i],
+                        'Advance': request.POST.getlist('Advance')[i]
+                    }
+                    form2 = PaymentForm2(form2_data)
+                    if form2.is_valid():
+                        instance2 = form2.save(commit=False)
+                        instance2.Created_by = request.user
+                        instance2.Transactions_id = patient
+                        instance2.Balance = instance2.amount - instance2.Discount - instance2.Advance
+                        form2_list.append(instance2)
+                    else:
+                        print(form2.errors)
 
-                    messages.success(request, "Payment add successfully.")
-                    fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
-                    return redirect('Patient_list', patientview_id=patientview_id)
+                for instance2 in form2_list:
+                    instance2.save()
+                    if patient.Total_amount > patient.Payable_amount:
+                        patient.Total_amount = F('Total_amount')
+                        patient.Payable_amount = F('Payable_amount') + instance2.Advance
+                        patient.save()
+                    else:
+                        patient.Total_amount = F('Total_amount') + instance2.amount - instance2.Discount
+                        patient.Payable_amount = F('Payable_amount') + instance2.Advance
+                        patient.save()
+                    
+                messages.success(request, "Payment add successfully.")
+                fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+                return redirect('Patient_list', patientview_id=patientview_id)
         else:
             form1 = TransactionsForm1(instance=patient)
             form2 = PaymentForm2(instance=patient)
+
+        # Check if Total_amount exceeds Payable_amount and create a new form if necessary
+        if patient.Total_amount > patient.Payable_amount:
+            difference = patient.Total_amount - patient.Payable_amount
+            initial_amount = difference
+            initial_discount = 0
+            initial_advance = 0
+
+            form2_initial = {
+                'amount': initial_amount,
+                'Discount': initial_discount,
+                'Advance': initial_advance
+            }
+
+            form2 = PaymentForm2(initial=form2_initial)
 
         context['view_patient'] = view_patient
         context['form1'] = form1
         context['form2'] = form2
         context['patient'] = patient
-        # context['user_logs']=user_logs   
+        context['payments'] = payments
         return render(request,'patient/view_patient.html',context)
 
     else:
-        messages.error(request,page_deny)
+        messages.error(request, page_deny)
         return redirect("admin")
+
     
- 
- 
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from django.http import HttpResponse
-from django.template.loader import get_template
-from .models import Patient_And_Client
-import io
-from django.template.loader import render_to_string
-
-def view_patient_details_as_pdf(request, patientview_id):
-    # Retrieve patient details
-    view_patient = Patient_And_Client.objects.get(id=patientview_id)
-
-    # Render the template with patient details
-    context = {'view_patient': view_patient}
-    html_content = render_to_string('patient/pdf.html', context)
-    
-
-    # Create a buffer to store the PDF
-    buffer = io.BytesIO()
-
-    # Create a new PDF document
-    pdf = SimpleDocTemplate(buffer, pagesize=letter)
-
-    # Configure font for Arabic text
-    from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.pdfbase import pdfmetrics
-
-    # You need to provide a path to an Arabic font file
-    arabic_font_path = 'Amiri-Regular.ttf'
-    pdfmetrics.registerFont(TTFont('Arabic', arabic_font_path))
-
-    # Add patient details to the PDF
-    arabic_style = ParagraphStyle(
-        'arabic',
-        fontName='Arabic',  # Use the name registered with pdfmetrics
-        fontSize=12,  # Adjust font size as needed
-        direction='RTL'  # Right-to-left direction
-    )
-    paragraph = Paragraph(html_content, arabic_style)
-    pdf.build([paragraph])
-
-    # Close the PDF
-    buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="patient_details.pdf"'
-    return response

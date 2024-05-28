@@ -146,7 +146,6 @@
               {{view_patient.remark}}
               {% endif %} 
           </div>
-          <a href="{% url 'view_patient_pdf' patientview_id=view_patient.id %}">View Patient Details as PDF</a>
       </div>
   </div>
 </div>
@@ -206,49 +205,81 @@
       <div class="collapse multi-collapse" id="multiCollapseExample2">
         <div class="card">
           <div class="card-body">
+            {% if payments %}
             <div class="d-flex justify-content-between">
-              <h4 class="card-title">Payment Form</h4>
-              {% if Patient.Total_amount %}
+              <h4 class="card-title">Payment Table</h4>
+              {% if patient.transaction_id %}
               <h5 class="card-description">
-                {{ Patient.Transactions_id }}
-                Total amount={{ Patient.Total_amount }}
+                {{ patient.transaction_id }}
               </h5>
               {% endif %}
             </div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Discount</th>
+                        <th>Advance</th>
+                        <th>Total Amount</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.Created_at|date:"j/F/Y" }}</td>
+                        <td>{{ payment.amount }}</td>
+                        <td>{{ payment.Discount }}</td>
+                        <td>{{ payment.Advance }}</td>
+                        <td>{{ payment.Balance }}</td>
+                        <td>{% if payment.Remark %}{{ payment.Remark }}{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             <hr>
-            <form action="" method="POST" enctype="multipart/form-data">
+            {% endif %}
+            <div class="d-flex justify-content-between">
+              <h4 class="card-title">Payment Form</h4>
+            </div>
+            <form action="" method="POST" enctype="multipart/form-data" id="payment-form">
               {% csrf_token %}
-              <div class="row">
-                <div class="col-md-4 col-lg-4">
-                  <div class="form-group">
-                    <label class="form-label">Amount<span class="danger" style="color: red;"> *</span></label>
-                    {{ form2.amount }}
-                  </div>
-                </div>
-                <div class="col-md-4 col-lg-4">
-                  <div class="form-group">
-                    <label class="form-label">Discount</label>
-                    {{ form2.Discount }}
-                  </div>
-                </div>
+              <div id="payment-forms-container">
+                <div class="payment-form">
+                  <div class="row">
+                    <div class="col-md-4 col-lg-4">
+                      <div class="form-group">
+                        <label class="form-label">Amount<span class="danger" style="color: red;"> *</span></label>
+                        {{ form2.amount }}
+                      </div>
+                    </div>
+                    <div class="col-md-4 col-lg-4">
+                      <div class="form-group">
+                        <label class="form-label">Discount</label>
+                        {{ form2.Discount }}
+                      </div>
+                    </div>
 
-                <div class="col-md-3 col-lg-3">
-                  <div class="form-group">
-                    <label class="form-label">Advance</label>
-                    {{ form2.Advance }}
+                    <div class="col-md-3 col-lg-3">
+                      <div class="form-group">
+                        <label class="form-label">Advance</label>
+                        {{ form2.Advance }}
+                      </div>
+                    </div>
+
+                    <div class="col-md-1 col-lg-1">
+                      <div class="form-group">
+                        <label class="form-label"><br></label>
+                        <button class="btn btn-primary text-white form-control add-payment-form" type="button">
+                          <i class="fa fa-plus"></i>
+                      </button>
+                      </div>
+                    </div>
+                    
+
                   </div>
                 </div>
-
-                <div class="col-md-1 col-lg-1">
-                  <div class="form-group">
-                    <label class="form-label"><br></label>
-                    <button class="btn btn-primary text-white form-control" type="button">
-                      <i class="fa fa-plus"></i>
-                  </button>
-                  </div>
-                </div>
-                
-
               </div>
               <br>
               <button type="submit" name="form2_submit" class="btn btn-primary me-2">Submit</button>
@@ -280,5 +311,26 @@
 </script>
 
 
+<script>
+  document.getElementById('payment-forms-container').addEventListener('click', function (event) {
+      if (event.target.classList.contains('add-payment-form')) {
+          var container = document.getElementById('payment-forms-container');
+          var newForm = container.firstElementChild.cloneNode(true);
+          
+          // Clear the values of the cloned form inputs
+          newForm.querySelectorAll('input').forEach(input => input.value = '');
+          
+          var addBtn = newForm.querySelector('.add-payment-form');
+          
+          addBtn.classList.remove('add-payment-form');
+          addBtn.classList.add('remove-payment-form');
+          addBtn.innerHTML = '<i class="fa fa-minus"></i>';
+          
+          container.appendChild(newForm);
+      } else if (event.target.classList.contains('remove-payment-form')) {
+          event.target.closest('.payment-form').remove();
+      }
+  });
+  </script>
 
 {% endblock Page_Content %}
