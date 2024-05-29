@@ -743,6 +743,9 @@ def Patient_list(request, patientview_id):
         payments = Payment.objects.filter(Transactions_id=patient)
 
         if request.method == 'POST':
+            
+            
+            
             form1 = TransactionsForm1(request.POST, instance=patient)
             if 'form1_submit' in request.POST:
                 instance = form1.save()
@@ -771,14 +774,20 @@ def Patient_list(request, patientview_id):
 
                 for instance2 in form2_list:
                     instance2.save()
-                    if patient.Total_amount > patient.Payable_amount:
+                    
+                    
+                    patient.refresh_from_db()
+                    total_amount = patient.Total_amount
+                    payable_amount = patient.Payable_amount
+                    
+                    if total_amount > payable_amount:
                         patient.Total_amount = F('Total_amount')
                         patient.Payable_amount = F('Payable_amount') + instance2.Advance
-                        patient.save()
                     else:
                         patient.Total_amount = F('Total_amount') + instance2.amount - instance2.Discount
                         patient.Payable_amount = F('Payable_amount') + instance2.Advance
-                        patient.save()
+                        
+                    patient.save(update_fields=['Total_amount', 'Payable_amount'])
                     
                 messages.success(request, "Payment add successfully.")
                 fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
@@ -786,13 +795,14 @@ def Patient_list(request, patientview_id):
         else:
             form1 = TransactionsForm1(instance=patient)
             form2 = PaymentForm2(instance=patient)
-
+            
+        patient.refresh_from_db()
         # Check if Total_amount exceeds Payable_amount and create a new form if necessary
         if patient.Total_amount > patient.Payable_amount:
             difference = patient.Total_amount - patient.Payable_amount
             initial_amount = difference
             initial_discount = 0
-            initial_advance = 0
+            initial_advance = difference
 
             form2_initial = {
                 'amount': initial_amount,
