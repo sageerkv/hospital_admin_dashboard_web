@@ -633,12 +633,12 @@ def generate_user_id():
     return f"{prefix}{new_id:02d}"
 
 
-def generate_transaction_id():
-    last_transaction = Transactions.objects.all().order_by('id').last()
-    if not last_transaction or not last_transaction.transaction_id.startswith('invd-'):
-        return 'invd-01'
-    new_number = int(last_transaction.transaction_id.split('-')[2]) + 1
-    return f'invd-{new_number:02d}'
+# def generate_transaction_id():
+#     last_transaction = Transactions.objects.all().order_by('id').last()
+#     if not last_transaction or not last_transaction.transaction_id.startswith('invd-'):
+#         return 'invd-01'
+#     new_number = int(last_transaction.transaction_id.split('-')[2]) + 1
+#     return f'invd-{new_number:02d}'
 
 
 
@@ -656,20 +656,6 @@ def Add_patient(request):
                 instance.Created_by = request.user
                 instance.User_id = generate_user_id()
                 instance.save()
-                
-                transaction_id = generate_transaction_id()
-                
-                # Create a new instance for the transfer to the 'to' account
-                to_instance = Transactions(
-                    transaction_id=transaction_id,
-                    Type=0,
-                    Transaction_type=0,
-                    Date=timezone.now().date(),
-                    Created_by=request.user,
-                    User=instance
-                    
-                )
-                to_instance.save()
                 
                 
                 
@@ -729,98 +715,162 @@ def Edit_patient(request,patientedit_id):
         messages.error(request,page_deny)
         return redirect("admin")
     
-    
-from django.db.models import F
+  
+# from django.db.models import F
+
+# @login_required(login_url="login")
+# def Patient_list(request, patientview_id):
+
+#     if request.user.is_superuser or PermisionsOf(request, 'View Patient').has_permission():
+#         context = get_menu(request)
+#         view_patient = Patient_And_Client.objects.get(id=patientview_id)
+        
+#         patient = Transactions.objects.get(User=view_patient)
+#         payments = Payment.objects.filter(Transactions_id=patient)
+
+#         if request.method == 'POST':
+#             form1 = TransactionsForm1(request.POST, instance=patient)
+#             if 'form1_submit' in request.POST:
+#                 instance = form1.save()
+#                 messages.success(request, "Patient data edited successfully.")
+#                 fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+#                 return redirect('Patient_list', patientview_id=patientview_id)
+            
+#             elif 'form2_submit' in request.POST:
+#                 form2_list = []
+#                 form_count = len(request.POST.getlist('amount'))
+#                 for i in range(form_count):
+#                     form2_data = {
+#                         'amount': request.POST.getlist('amount')[i],
+#                         'Discount': request.POST.getlist('Discount')[i],
+#                         'Advance': request.POST.getlist('Advance')[i]
+#                     }
+#                     form2 = PaymentForm2(form2_data)
+#                     if form2.is_valid():
+#                         instance2 = form2.save(commit=False)
+#                         instance2.Created_by = request.user
+#                         instance2.Transactions_id = patient
+#                         instance2.Balance = instance2.amount - instance2.Discount - instance2.Advance
+#                         form2_list.append(instance2)
+#                     else:
+#                         print(form2.errors)
+
+#                 for instance2 in form2_list:
+#                     instance2.save()
+                    
+                    
+#                     patient.refresh_from_db()
+#                     total_amount = patient.Total_amount
+#                     payable_amount = patient.Payable_amount
+                    
+#                     if total_amount > payable_amount:
+#                         patient.Total_amount = F('Total_amount')
+#                         patient.Payable_amount = F('Payable_amount') + instance2.Advance
+#                     else:
+#                         patient.Total_amount = F('Total_amount') + instance2.amount - instance2.Discount
+#                         patient.Payable_amount = F('Payable_amount') + instance2.Advance
+                        
+#                     patient.save(update_fields=['Total_amount', 'Payable_amount'])
+                    
+#                 messages.success(request, "Payment add successfully.")
+#                 fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+#                 return redirect('Patient_list', patientview_id=patientview_id)
+#         else:
+#             form1 = TransactionsForm1(instance=patient)
+#             form2 = PaymentForm2(instance=patient)
+            
+#         patient.refresh_from_db()
+#         # Check if Total_amount exceeds Payable_amount and create a new form if necessary
+#         if patient.Total_amount > patient.Payable_amount:
+#             difference = patient.Total_amount - patient.Payable_amount
+#             initial_amount = difference
+#             initial_discount = 0
+#             initial_advance = difference
+
+#             form2_initial = {
+#                 'amount': initial_amount,
+#                 'Discount': initial_discount,
+#                 'Advance': initial_advance
+#             }
+
+#             form2 = PaymentForm2(initial=form2_initial)
+
+#         context['view_patient'] = view_patient
+#         context['form1'] = form1
+#         context['form2'] = form2
+#         context['patient'] = patient
+#         context['payments'] = payments
+#         return render(request,'patient/view_patient.html',context)
+
+#     else:
+#         messages.error(request, page_deny)
+#         return redirect("admin")
+
+def generate_transaction_id():
+    last_transaction = Transactions.objects.all().order_by('id').last()
+    if not last_transaction or not last_transaction.transaction_id.startswith('invd-'):
+        return 'invd-01'
+    try:
+        new_number = int(last_transaction.transaction_id.split('-')[1]) + 1
+    except (IndexError, ValueError):
+        return 'invd-01'
+    return f'invd-{new_number:02d}'
 
 @login_required(login_url="login")
-def Patient_list(request, patientview_id):
-
+def Patient_list(request, patientview_id, transaction_id=None):
     if request.user.is_superuser or PermisionsOf(request, 'View Patient').has_permission():
         context = get_menu(request)
         view_patient = Patient_And_Client.objects.get(id=patientview_id)
         
-        patient = Transactions.objects.get(User=view_patient)
-        payments = Payment.objects.filter(Transactions_id=patient)
+        patient_transactions = Transactions.objects.filter(User=view_patient)
+        
+        if transaction_id:
+            # Edit an existing transaction
+            transaction = Transactions.objects.get(id=transaction_id)
+        else:
+            # Create a new transaction
+            transaction = None
 
         if request.method == 'POST':
-            
-            
-            
-            form1 = TransactionsForm1(request.POST, instance=patient)
-            if 'form1_submit' in request.POST:
-                instance = form1.save()
-                messages.success(request, "Patient data edited successfully.")
-                fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
-                return redirect('Patient_list', patientview_id=patientview_id)
-            
-            elif 'form2_submit' in request.POST:
-                form2_list = []
-                form_count = len(request.POST.getlist('amount'))
-                for i in range(form_count):
-                    form2_data = {
-                        'amount': request.POST.getlist('amount')[i],
-                        'Discount': request.POST.getlist('Discount')[i],
-                        'Advance': request.POST.getlist('Advance')[i]
-                    }
-                    form2 = PaymentForm2(form2_data)
-                    if form2.is_valid():
-                        instance2 = form2.save(commit=False)
-                        instance2.Created_by = request.user
-                        instance2.Transactions_id = patient
-                        instance2.Balance = instance2.amount - instance2.Discount - instance2.Advance
-                        form2_list.append(instance2)
-                    else:
-                        print(form2.errors)
+            if transaction:
+                form = TransactionsForm1(request.POST, instance=transaction)
+            else:
+                form = TransactionsForm1(request.POST)
 
-                for instance2 in form2_list:
-                    instance2.save()
+            if form.is_valid():
+                if transaction:
+                    form.save()
+                    messages.success(request, "Transaction edited successfully.")
+                    fnlog(request, None, 'Admin_and_Staff', f"Transaction edited: {view_patient.first_name} - {view_patient.User_id}", "")
+                else:
+                    # Generate a new transaction ID
+                    transaction_id = generate_transaction_id()
                     
+                    # Create a new instance for the transaction
+                    new_transaction = form.save(commit=False)
+                    new_transaction.transaction_id = transaction_id
+                    new_transaction.Type = 0
+                    new_transaction.Transaction_type = 0
+                    new_transaction.Date = timezone.now().date()
+                    new_transaction.Created_by = request.user
+                    new_transaction.User = view_patient
+                    new_transaction.save()
                     
-                    patient.refresh_from_db()
-                    total_amount = patient.Total_amount
-                    payable_amount = patient.Payable_amount
-                    
-                    if total_amount > payable_amount:
-                        patient.Total_amount = F('Total_amount')
-                        patient.Payable_amount = F('Payable_amount') + instance2.Advance
-                    else:
-                        patient.Total_amount = F('Total_amount') + instance2.amount - instance2.Discount
-                        patient.Payable_amount = F('Payable_amount') + instance2.Advance
-                        
-                    patient.save(update_fields=['Total_amount', 'Payable_amount'])
-                    
-                messages.success(request, "Payment add successfully.")
-                fnlog(request, None, 'Admin_and_Staff', f"Patient data edited : {view_patient.first_name} - {view_patient.User_id}", "")
+                    messages.success(request, "New transaction created successfully.")
+                    fnlog(request, None, 'Admin_and_Staff', f"New transaction created: {view_patient.first_name} - {view_patient.User_id}", "")
                 return redirect('Patient_list', patientview_id=patientview_id)
         else:
-            form1 = TransactionsForm1(instance=patient)
-            form2 = PaymentForm2(instance=patient)
-            
-        patient.refresh_from_db()
-        # Check if Total_amount exceeds Payable_amount and create a new form if necessary
-        if patient.Total_amount > patient.Payable_amount:
-            difference = patient.Total_amount - patient.Payable_amount
-            initial_amount = difference
-            initial_discount = 0
-            initial_advance = difference
-
-            form2_initial = {
-                'amount': initial_amount,
-                'Discount': initial_discount,
-                'Advance': initial_advance
-            }
-
-            form2 = PaymentForm2(initial=form2_initial)
+            if transaction:
+                form = TransactionsForm1(instance=transaction)
+            else:
+                form = TransactionsForm1()
 
         context['view_patient'] = view_patient
-        context['form1'] = form1
-        context['form2'] = form2
-        context['patient'] = patient
-        context['payments'] = payments
-        return render(request,'patient/view_patient.html',context)
-
+        context['form'] = form
+        context['patient_transactions'] = patient_transactions
+        context['transaction'] = transaction
+        return render(request, 'patient/view_patients.html', context)
     else:
         messages.error(request, page_deny)
         return redirect("admin")
-
     
