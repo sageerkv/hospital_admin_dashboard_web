@@ -177,10 +177,9 @@ class TransactionsForm1(forms.ModelForm):
 class PaymentForm2(forms.ModelForm):
     class Meta:
         model = Payment
-        fields = ['amount', 'Discount', 'Advance']
+        fields = ['amount', 'Remark']
         widgets = {
             'amount': forms.TextInput(attrs={'class': 'form-control'}),
-            'Discount': forms.TextInput(attrs={'class': 'form-control'}),
-            'Advance': forms.TextInput(attrs={'class': 'form-control'}),
+            'Remark': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
         }
         
