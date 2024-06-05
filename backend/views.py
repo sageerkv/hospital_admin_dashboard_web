@@ -817,36 +817,32 @@ def generate_transaction_id():
     return f'invd-{new_number:02d}'
 
 @login_required(login_url="login")
-def Patient_list(request, patientview_id, transaction_id=None):
+def Patient_list(request, patientview_id):
     if request.user.is_superuser or PermisionsOf(request, 'View Patient').has_permission():
         context = get_menu(request)
         view_patient = Patient_And_Client.objects.get(id=patientview_id)
         
         patient_transactions = Transactions.objects.filter(User=view_patient)
-        
-        if transaction_id:
-            # Edit an existing transaction
-            transaction = Transactions.objects.get(id=transaction_id)
-        else:
-            # Create a new transaction
-            transaction = None
 
-        if request.method == 'POST':
-            if transaction:
+        if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            transaction_id = request.POST.get('transaction_id', None)
+            if transaction_id:
+                transaction = get_object_or_404(Transactions, id=transaction_id)
                 form = TransactionsForm1(request.POST, instance=transaction)
             else:
                 form = TransactionsForm1(request.POST)
-
+            
             if form.is_valid():
-                if transaction:
+                if transaction_id:
                     form.save()
                     messages.success(request, "Transaction edited successfully.")
+                    response = {
+                        'status': 'success',
+                        'message': 'Transaction edited successfully.'
+                    }
                     fnlog(request, None, 'Admin_and_Staff', f"Transaction edited: {view_patient.first_name} - {view_patient.User_id}", "")
                 else:
-                    # Generate a new transaction ID
                     transaction_id = generate_transaction_id()
-                    
-                    # Create a new instance for the transaction
                     new_transaction = form.save(commit=False)
                     new_transaction.transaction_id = transaction_id
                     new_transaction.Type = 0
@@ -855,22 +851,33 @@ def Patient_list(request, patientview_id, transaction_id=None):
                     new_transaction.Created_by = request.user
                     new_transaction.User = view_patient
                     new_transaction.save()
-                    
+                    response = {
+                        'status': 'success',
+                        'message': 'New transaction created successfully.'
+                    }
                     messages.success(request, "New transaction created successfully.")
                     fnlog(request, None, 'Admin_and_Staff', f"New transaction created: {view_patient.first_name} - {view_patient.User_id}", "")
-                return redirect('Patient_list', patientview_id=patientview_id)
-        else:
-            if transaction:
-                form = TransactionsForm1(instance=transaction)
+                return JsonResponse(response)
             else:
-                form = TransactionsForm1()
-
+                errors = dict(form.errors.items())
+                return JsonResponse({'status': 'error', 'errors': errors})
+        
         context['view_patient'] = view_patient
-        context['form'] = form
         context['patient_transactions'] = patient_transactions
-        context['transaction'] = transaction
+        
         return render(request, 'patient/view_patients.html', context)
     else:
         messages.error(request, page_deny)
         return redirect("admin")
+    
+def transaction_detail(request, patientview_id, transaction_id):
+    if transaction_id:
+        transaction = get_object_or_404(Transactions, id=transaction_id)
+        data = {
+            'Date': transaction.Date.strftime('%Y-%m-%d'),  # Format date for input[type="date"]
+            'Remark': transaction.Remark,
+        }
+        return JsonResponse(data)
+    else:
+        return JsonResponse({'Date': '', 'Remark': ''})
     

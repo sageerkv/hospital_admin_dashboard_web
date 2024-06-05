@@ -48,5 +48,5 @@ urlpatterns = [
     path('Edit_patient/<patientedit_id>',views.Edit_patient,name="Edit_patient"),
     # path('Patient_list/<patientview_id>',views.Patient_list,name="Patient_list"),
     path('Patient_list/<int:patientview_id>/', views.Patient_list, name="Patient_list"),
-    path('Patient_list/<int:patientview_id>/<int:transaction_id>/', views.Patient_list, name='Patient_list_edit'),
+    path('Patient_list/<int:patientview_id>/transaction/<int:transaction_id>/', views.transaction_detail, name="transaction_detail"),
 ]

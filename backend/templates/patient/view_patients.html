@@ -4,6 +4,7 @@
 
 
 {% block Page_Content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js" integrity="sha512-ykZ1QQr0Jy/4ZkvKuqWn4iF3lqPZyij9iRv6sGqLRdTPkY69YX6+7wvVGmsdBbiIfN/8OdsI7HABjvEok6ZopQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
     @import url(http://fonts.googleapis.com/css?family=Open+Sans);
     /* apply a natural box layout model to all elements, but allowing components to change */
@@ -173,7 +174,11 @@
             {% if patient_transactions %}
             <div class="d-flex justify-content-between">
                 <h4 class="card-title">Patient Details</h4>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalAdd">
+                <i class="fa fa-plus"></i> Add
+              </button>
             </div>
+            <br>
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
@@ -190,44 +195,61 @@
                         <td>{{ transaction.Date|date:"M d, Y" }}</td>
                         <td>{{ transaction.Remark }}</td>
                         <td>
-                            <a href="{% url 'Patient_list_edit' patientview_id=view_patient.id transaction_id=transaction.id %}" class="btn btn-outline-primary">Edit</a>
+                          <button type="button" class="btn btn-outline-primary edit-button" data-bs-toggle="modal" data-bs-target="#exampleModal{{transaction.id}}" data-transaction-id="{{ transaction.id }}">
+                            Edit
+                          </button>
                         </td>
                     </tr>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal{{transaction.id}}" tabindex="-1" aria-labelledby="exampleModalLabel{{transaction.id}}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel{{transaction.id}}">Edit Patient Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form class="transaction-form" data-transaction-id="{{ transaction.id }}" enctype="multipart/form-data">
+                              {% csrf_token %}
+                              <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+                              <input type="hidden" id="patientview_id" value="{{ view_patient.id }}">
+                              <div class="row">
+                                <div class="col-md-6 col-lg-6">
+                                  <div class="form-group">
+                                    <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
+                                    <input type="date" name="Date" class="form-control">
+                                    {% if form.Date.errors %}
+                                        <ul class="errors">
+                                            {% for error in form.Date.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                      
+                                <div class="col-md-12 col-lg-12">
+                                  <div class="form-group">
+                                    <label class="form-label">Description</label>
+                                    <textarea name="Remark" class="form-control"></textarea>
+                                  </div>
+                                </div>
+                              </div>
+                              <br>
+                              <button type="submit" class="btn btn-primary me-2">Submit</button>
+                              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {% endfor %}
                 </tbody>
             </table>
             <hr>
             {% endif %}
-          </div>
-          <div class="card-body">
-            <div class="d-flex justify-content-between">
-              <h4 class="card-title">Add Patient Description</h4>
-              <h5 class="card-description">
-                {{ view_patient.User_id }}
-              </h5>
-            </div>
-            <hr>
-            <form action="" method="POST" enctype="multipart/form-data">
-              {% csrf_token %}
-              <div class="row">
-                <div class="col-md-6 col-lg-6">
-                  <div class="form-group">
-                    <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
-                    {{ form.Date }}
-                  </div>
-                </div>
-      
-                <div class="col-md-12 col-lg-12">
-                  <div class="form-group">
-                    <label class="form-label">Description</label>
-                    {{ form.Remark }}
-                  </div>
-                </div>
-              </div>
-              <br>
-              <button type="submit" class="btn btn-primary me-2">Submit</button>
-              <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
-            </form>
           </div>
         </div>
       </div>
@@ -240,6 +262,54 @@
 
   </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalAdd" tabindex="-1" aria-labelledby="exampleModalLabelAdd" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabelAdd">Add New Patient Details</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form class="transaction-form" data-transaction-id="" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input type="hidden" name="transaction_id" value="">
+                  <div class="row">
+                      <div class="col-md-6 col-lg-6">
+                          <div class="form-group">
+                              <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
+                              <input type="date" name="Date" class="form-control">
+                              {% if form.Date.errors %}
+                                <ul class="errors">
+                                    {% for error in form.Date.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                              {% endif %}
+                          </div>
+                      </div>
+                      <div class="col-md-12 col-lg-12">
+                          <div class="form-group">
+                              <label class="form-label">Description</label>
+                              <textarea name="Remark" class="form-control"></textarea>
+                          </div>
+                      </div>
+                  </div>
+                  <br>
+                  <button type="submit" class="btn btn-primary me-2">Submit</button>
+                  <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+
+
+
+
 
 <script>
   // JavaScript to toggle visibility of collapsible sections
@@ -258,5 +328,59 @@
       });
   });
 </script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('.transaction-form').on('submit', function(event) {
+        event.preventDefault();
+        var $form = $(this);
+        var formData = new FormData(this);
+        var transactionId = $form.data('transaction-id');  // Get the transaction ID if it exists
+
+        $.ajax({
+            url: '',  // Your URL for handling the form submission
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    $('.modal').modal('hide');
+                    location.reload();
+                } else {
+                    var errors = response.errors;
+                    $.each(errors, function(key, value) {
+                        //alert(key + ": " + value);
+                    });
+                }
+            }
+        });
+    });
+
+    // Populate the form with existing transaction data when the modal is shown
+    $('.edit-button').on('click', function() {
+        var transactionId = $(this).data('transaction-id');
+        $.ajax({
+            url: '/Patient_list/' + $('#patientview_id').val() + '/transaction/' + transactionId + '/',  // URL to fetch the transaction data
+            type: 'GET',
+            success: function(data) {
+                var modal = $('#exampleModal' + transactionId);
+                modal.find('input[name="Date"]').val(data.Date);
+                modal.find('textarea[name="Remark"]').val(data.Remark);
+            }
+        });
+    });
+    $(document).ajaxSuccess(function(event, xhr, settings) {
+      $('html, body').animate({ scrollTop: 0 }, 'slow');
+  });
+});
+
+</script>
+
 
 {% endblock Page_Content %}
