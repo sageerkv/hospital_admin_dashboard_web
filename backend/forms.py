@@ -5,6 +5,7 @@ from django.core.validators import EmailValidator
 from django.contrib.auth.models import Group, Permission
 from .models import *
 from .allmessages import *
+from django.forms import modelformset_factory
 
 
 class DateInput(forms.DateInput):
@@ -165,7 +166,7 @@ class patient_and_client_Form(forms.ModelForm):
         self.fields['remark'].required = False
         self.fields['profile_img'].required = False
         
-class TransactionsForm1(forms.ModelForm):
+class TransactionsForm(forms.ModelForm):
     class Meta:
         model = Transactions
         fields = ['Date', 'Remark']
@@ -174,12 +175,16 @@ class TransactionsForm1(forms.ModelForm):
             'Remark': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
         }
 
-class PaymentForm2(forms.ModelForm):
+class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
         fields = ['amount', 'Remark']
         widgets = {
             'amount': forms.TextInput(attrs={'class': 'form-control'}),
-            'Remark': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
+            'Remark': forms.Textarea(attrs={'rows': 1, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['amount'].required = True
         
+PaymentFormSet = modelformset_factory(Payment, form=PaymentForm, extra=1)

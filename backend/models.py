@@ -189,7 +189,7 @@ class Transactions(models.Model):
                 (0, "Patient"),
                 (1, "Client"),
     )
-    transaction_id = models.CharField(max_length=255, blank=True)
+    Invoice_number = models.CharField(max_length=255, blank=True)
     Type = models.IntegerField(choices=User_type, blank=True, default=0)
     Transaction_type = models.IntegerField(choices=Transactions_type, blank=True, default=0)
     Date = models.DateField()
@@ -213,7 +213,7 @@ class Transactions(models.Model):
         ordering = ['Type']
 
     def __str__(self):
-        return f"{self.transaction_id} - {self.Created_by}"
+        return f"{self.id} - {self.Created_by}"
     
     
     

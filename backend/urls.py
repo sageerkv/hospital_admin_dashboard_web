@@ -46,7 +46,7 @@ urlpatterns = [
     path('View_patient', views.View_patient, name='View_patient'),
     path('Add_patient', views.Add_patient, name='Add_patient'),
     path('Edit_patient/<patientedit_id>',views.Edit_patient,name="Edit_patient"),
-    # path('Patient_list/<patientview_id>',views.Patient_list,name="Patient_list"),
     path('Patient_list/<int:patientview_id>/', views.Patient_list, name="Patient_list"),
     path('Patient_list/<int:patientview_id>/transaction/<int:transaction_id>/', views.transaction_detail, name="transaction_detail"),
+    path('patient/<int:patientview_id>/make_payment/<int:transaction_id>/', views.make_payment, name='make_payment'),
 ]

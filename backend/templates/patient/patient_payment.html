@@ -1,0 +1,187 @@
+{% extends "index.html" %} 
+{% load static %} 
+{% load custom_filters %}
+
+
+{% block Page_Content %}
+<style>
+.radio-group.d-flex {
+    display: flex;
+    align-items: center;
+}
+
+.radio-group .form-check {
+    margin-right: 15px;
+}
+
+  @media(max-width: 324px) {
+    .card-body {
+        font-size: 13.8px;
+    }
+}
+</style>
+
+<div class="card shadow mb-4">
+  <div class="card-header py-4 px-4 d-flex justify-content-between">
+      <div  style="display: flex;align-items: center;column-gap: 23px;">
+          <h3 class="m-0 font-weight-bold text-primary">TRANSACTION ID : {{transaction.id}}</h3>
+      </div>
+  </div>
+  <div class="card-body">
+      <div class="row font-sizes">
+        <div class="col-3">
+            Date
+          </div>:
+          <div class="col-8">
+            {{transaction.Date}}
+          </div><br>
+          <div class="col-3">
+            Remark
+          </div>:
+          <div class="col-8">
+            {{transaction.Remark}}
+          </div>
+      </div>
+  </div>
+</div>
+<div class="card shadow mb-4">
+  <div class="card-header py-4 px-4">
+      <p style="display: flex;justify-content: end;column-gap: 10px;"> 
+          
+          {% if request.user.is_superuser %}
+              <button class="btn btn-primary" type="button">Add New Payment</button>
+          {% else %}
+              {% for i in request.user.role.permissions.all %}
+                  {% if i.path_name == 'Add Payment' %}
+                  <button class="btn btn-primary" type="button">Add New Payment</button>
+                  {% endif %}
+              {% endfor %}
+          {% endif %}
+
+      </p>
+
+      <div class="card">
+        <div class="card-body">
+          {% if payments %}
+          <div class="d-flex justify-content-between">
+            <h4 class="card-title">Payment Table</h4>
+            {% if transaction.Invoice_number %}
+            <h5 class="card-description">
+              {{ transaction.Invoice_number }}
+            </h5>
+            {% endif %}
+          </div>
+          <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+                  <tr>
+                      <th>Date</th>
+                      <th>Amount</th>
+                      <th>Remark</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for payment in payments %}
+                  <tr>
+                      <td>{{ payment.Created_at|date:"j/F/Y" }}</td>
+                      <td>{{ payment.amount }}</td>
+                      <td>{% if payment.Remark %}{{ payment.Remark }}{% endif %}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+          <hr>
+          {% endif %}
+          <div class="d-flex justify-content-between">
+            <h4 class="card-title">Payment Form</h4>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <div class="col-12">
+              <div class="row" id="formset">
+                {% for form in formset %}
+                <div class="col-md-6 col-lg-6">
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        {{ form.amount }}
+                    </div>
+                </div>
+                <div class="col-md-5 col-lg-5">
+                    <div class="form-group">
+                        <label for="addon_price">Remark</label>
+                        {{ form.Remark }}
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="col-md-1 col-lg-1">
+                    <button id="add-more" class="btn btn-sm btn-primary mb-3"  type="button" style="margin-top: 36px;"><span>&plus;</span></button>
+                </div>
+              </div>
+                
+              <div class="row" id="empty_form" style="display: none;">
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-md-6 col-lg-6">
+                        <div class="form-group">
+                            <label class="form-label">Amount</label>
+                            <input type="text" name="form-__prefix__-amount" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-5 col-lg-5">
+                        <div class="form-group">
+                            <label for="addon_price">Remark</label>
+                            <textarea name="form-__prefix__-Remark" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-1 col-lg-1">
+                        <button type="button" class="btn btn-sm btn-info delete-row" style="margin-top: 36px;"><span>&minus;</span></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-6 col-lg-6">
+                  <div class="form-group">
+                      <label class="form-label">Discount</label>
+                      <input type="number" name="Discount" class="form-control" value="0">
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-6">
+                  <div class="form-group">
+                      <label class="form-label">Advance</label>
+                      <input type="number" name="Advance" class="form-control" value="0">
+                  </div>
+                </div>
+              <div>
+            </div>
+           
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+      $('#add-more').click(function () {
+          var form_idx = $('#id_form-TOTAL_FORMS').val();
+          console.log('Form index:', form_idx); // Log the value of form_idx to the console
+          var new_form = $('#empty_form').html().replace(/__prefix__/g, form_idx);
+          $('#formset').append(new_form);
+          $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+      });
+
+      $(document).on('click', '.delete-row', function () {
+          $(this).closest('.col-md-12').remove();
+      });
+  });
+</script>
+
+
+{% endblock Page_Content %}

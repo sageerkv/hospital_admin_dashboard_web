@@ -4,47 +4,9 @@
 
 
 {% block Page_Content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js" integrity="sha512-ykZ1QQr0Jy/4ZkvKuqWn4iF3lqPZyij9iRv6sGqLRdTPkY69YX6+7wvVGmsdBbiIfN/8OdsI7HABjvEok6ZopQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
-    @import url(http://fonts.googleapis.com/css?family=Open+Sans);
-    /* apply a natural box layout model to all elements, but allowing components to change */
-    
-    .activity-feed {
-      padding: 15px;
-    }
-    .activity-feed .feed-item {
-      position: relative;
-      padding-bottom: 20px;
-      padding-left: 30px;
-      border-left: 2px solid #e4e8eb;
-    }
-    .activity-feed .feed-item:last-child {
-      border-color: transparent;
-    }
-    .activity-feed .feed-item:after {
-      content: "";
-      display: block;
-      position: absolute;
-      top: 0;
-      left: -6px;
-      width: 10px;
-      height: 10px;
-      border-radius: 6px;
-      background: #fff;
-      border: 1px solid #f37167;
-    }
-    .activity-feed .feed-item .date {
-      position: relative;
-      top: -5px;
-      color: #8c96a3;
-      text-transform: uppercase;
-      font-size: 13px;
-    }
-    .activity-feed .feed-item .text {
-      position: relative;
-      top: -3px;
-    }
-
-    .profile-image-container {
+  .profile-image-container {
       position: relative;
       display: inline-block;
   }
@@ -154,183 +116,205 @@
       <p style="display: flex;justify-content: end;column-gap: 10px;"> 
           
           {% if request.user.is_superuser %}
-              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample1">Patient Details</button>
-              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Payment</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalAdd">
+              <i class="fa fa-plus"></i> Add
+            </button>
           {% else %}
               {% for i in request.user.role.permissions.all %}
                   {% if i.path_name == 'Edit Patient' %}
-                  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample1">Patient Details</button>
-                  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Payment</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalAdd">
+                      <i class="fa fa-plus"></i> Add
+                    </button>
                   {% endif %}
               {% endfor %}
           {% endif %}
 
       </p>
 
-      <div class="collapse multi-collapse show" id="multiCollapseExample1">
         <div class="card">
           <div class="card-body">
+            {% if patient_transactions %}
             <div class="d-flex justify-content-between">
-              <h4 class="card-title">Patient Details</h4>
-              <h5 class="card-description">
-                {{ view_patient.User_id }}
-              </h5>
+                <h4 class="card-title">Patient Details</h4>
             </div>
-            <hr>
-            <form action="" method="POST" enctype="multipart/form-data">
-              {% csrf_token %}
-              <div class="row">
-                <div class="col-md-6 col-lg-6">
-                  <div class="form-group">
-                    <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
-                    {{ form1.Date }}
-                  </div>
-                </div>
-      
-                <div class="col-md-12 col-lg-12">
-                  <div class="form-group">
-                    <label class="form-label">Description</label>
-                    {{ form1.Remark }}
-                  </div>
-                </div>
-              </div>
-              <br>
-              <button type="submit"  name="form1_submit" class="btn btn-primary me-2">Submit</button>
-              <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="collapse multi-collapse" id="multiCollapseExample2">
-        <div class="card">
-          <div class="card-body">
-            {% if payments %}
-            <div class="d-flex justify-content-between">
-              <h4 class="card-title">Payment Table</h4>
-              {% if patient.transaction_id %}
-              <h5 class="card-description">
-                {{ patient.transaction_id }}
-              </h5>
-              {% endif %}
-            </div>
-            <table class="table table-striped">
+            <br>
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Date</th>
-                        <th>Amount</th>
-                        <th>Discount</th>
-                        <th>Advance</th>
-                        <th>Balance</th>
                         <th>Remark</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for payment in payments %}
+                    {% for transaction in patient_transactions %}
                     <tr>
-                        <td>{{ payment.Created_at|date:"j/F/Y" }}</td>
-                        <td>{{ payment.amount }}</td>
-                        <td>{{ payment.Discount }}</td>
-                        <td>{{ payment.Advance }}</td>
-                        <td>{{ payment.Balance }}</td>
-                        <td>{% if payment.Remark %}{{ payment.Remark }}{% endif %}</td>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{ transaction.Date|date:"M d, Y" }}</td>
+                        <td>{{ transaction.Remark }}</td>
+                        <td>
+                          <button type="button" class="btn btn-outline-primary edit-button" data-bs-toggle="modal" data-bs-target="#exampleModal{{transaction.id}}" data-transaction-id="{{ transaction.id }}">
+                            Edit
+                          </button>
+                          <a href="{% url 'make_payment' view_patient.id transaction.id %}" class="btn btn-outline-success">
+                            Make Payment
+                          </a>
+                        </td>
                     </tr>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal{{transaction.id}}" tabindex="-1" aria-labelledby="exampleModalLabel{{transaction.id}}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel{{transaction.id}}">Edit Patient Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form class="transaction-form" data-transaction-id="{{ transaction.id }}" enctype="multipart/form-data">
+                              {% csrf_token %}
+                              <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+                              <input type="hidden" id="patientview_id" value="{{ view_patient.id }}">
+                              <div class="row">
+                                <div class="col-md-6 col-lg-6">
+                                  <div class="form-group">
+                                    <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
+                                    <input type="date" name="Date" class="form-control">
+                                    {% if form.Date.errors %}
+                                        <ul class="errors">
+                                            {% for error in form.Date.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                      
+                                <div class="col-md-12 col-lg-12">
+                                  <div class="form-group">
+                                    <label class="form-label">Description</label>
+                                    <textarea name="Remark" class="form-control"></textarea>
+                                  </div>
+                                </div>
+                              </div>
+                              <br>
+                              <button type="submit" class="btn btn-primary me-2">Submit</button>
+                              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {% endfor %}
                 </tbody>
             </table>
             <hr>
+            {% else %}
+            <label for="" class="text-primary">No Matches Found</label>
             {% endif %}
-            <div class="d-flex justify-content-between">
-              <h4 class="card-title">Payment Form</h4>
-            </div>
-            <form action="" method="POST" enctype="multipart/form-data" id="payment-form">
-              {% csrf_token %}
-              <div id="payment-forms-container">
-                <div class="payment-form">
-                  <div class="row">
-                    <div class="col-md-4 col-lg-4">
-                      <div class="form-group">
-                        <label class="form-label">Amount<span class="danger" style="color: red;"> *</span></label>
-                        {{ form2.amount }}
-                      </div>
-                    </div>
-                    <div class="col-md-4 col-lg-4">
-                      <div class="form-group">
-                        <label class="form-label">Discount</label>
-                        {{ form2.Discount }}
-                      </div>
-                    </div>
-
-                    <div class="col-md-3 col-lg-3">
-                      <div class="form-group">
-                        <label class="form-label">Advance</label>
-                        {{ form2.Advance }}
-                      </div>
-                    </div>
-
-                    <div class="col-md-1 col-lg-1">
-                      <div class="form-group">
-                        <label class="form-label"><br></label>
-                        <button class="btn btn-primary text-white form-control add-payment-form" type="button">
-                          <i class="fa fa-plus"></i>
-                      </button>
-                      </div>
-                    </div>
-                    
-
-                  </div>
-                </div>
-              </div>
-              <br>
-              <button type="submit" name="form2_submit" class="btn btn-primary me-2">Submit</button>
-              <button onclick="window.location.href='{% url 'View_patient' %}'" class="btn btn-light" type="button">Cancel</button>
-            </form>
           </div>
         </div>
-      </div>
 
   </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModalAdd" tabindex="-1" aria-labelledby="exampleModalLabelAdd" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabelAdd">Add New Patient Details</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form class="transaction-form" data-transaction-id="" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input type="hidden" name="transaction_id" value="">
+                  <div class="row">
+                      <div class="col-md-6 col-lg-6">
+                          <div class="form-group">
+                              <label class="form-label">Date<span class="danger" style="color: red;"> *</span></label>
+                              <input type="date" name="Date" class="form-control">
+                              {% if form.Date.errors %}
+                                <ul class="errors">
+                                    {% for error in form.Date.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                              {% endif %}
+                          </div>
+                      </div>
+                      <div class="col-md-12 col-lg-12">
+                          <div class="form-group">
+                              <label class="form-label">Description</label>
+                              <textarea name="Remark" class="form-control"></textarea>
+                          </div>
+                      </div>
+                  </div>
+                  <br>
+                  <button type="submit" class="btn btn-primary me-2">Submit</button>
+                  <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-  // JavaScript to toggle visibility of collapsible sections
-  document.addEventListener("DOMContentLoaded", function () {
-      const buttons = document.querySelectorAll("[data-toggle='collapse']");
-      buttons.forEach(function (button) {
-          button.addEventListener("click", function () {
-              const target = document.querySelector(this.getAttribute("href"));
-              const allCollapse = document.querySelectorAll(".collapse.multi-collapse");
-              allCollapse.forEach(function (collapse) {
-                  if (collapse !== target) {
-                      collapse.classList.remove("show");
-                  }
-              });
-          });
-      });
+$(document).ready(function() {
+    $('.transaction-form').on('submit', function(event) {
+        event.preventDefault();
+        var $form = $(this);
+        var formData = new FormData(this);
+        var transactionId = $form.data('transaction-id');  // Get the transaction ID if it exists
+
+        $.ajax({
+            url: '',  // Your URL for handling the form submission
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    $('.modal').modal('hide');
+                    location.reload();
+                } else {
+                    var errors = response.errors;
+                    $.each(errors, function(key, value) {
+                        //alert(key + ": " + value);
+                    });
+                }
+            }
+        });
+    });
+
+    // Populate the form with existing transaction data when the modal is shown
+    $('.edit-button').on('click', function() {
+        var transactionId = $(this).data('transaction-id');
+        $.ajax({
+            url: '/Patient_list/' + $('#patientview_id').val() + '/transaction/' + transactionId + '/',  // URL to fetch the transaction data
+            type: 'GET',
+            success: function(data) {
+                var modal = $('#exampleModal' + transactionId);
+                modal.find('input[name="Date"]').val(data.Date);
+                modal.find('textarea[name="Remark"]').val(data.Remark);
+            }
+        });
+    });
+    $(document).ajaxSuccess(function(event, xhr, settings) {
+      $('html, body').animate({ scrollTop: 0 }, 'slow');
   });
+});
+
 </script>
 
-
-<script>
-  document.getElementById('payment-forms-container').addEventListener('click', function (event) {
-      if (event.target.classList.contains('add-payment-form')) {
-          var container = document.getElementById('payment-forms-container');
-          var newForm = container.firstElementChild.cloneNode(true);
-          
-          // Clear the values of the cloned form inputs
-          newForm.querySelectorAll('input').forEach(input => input.value = '');
-          
-          var addBtn = newForm.querySelector('.add-payment-form');
-          
-          addBtn.classList.remove('add-payment-form');
-          addBtn.classList.add('remove-payment-form');
-          addBtn.innerHTML = '<i class="fa fa-minus"></i>';
-          
-          container.appendChild(newForm);
-      } else if (event.target.classList.contains('remove-payment-form')) {
-          event.target.closest('.payment-form').remove();
-      }
-  });
-  </script>
 
 {% endblock Page_Content %}

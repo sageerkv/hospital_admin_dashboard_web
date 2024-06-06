@@ -37,5 +37,6 @@ def get_menu(request):
     context['is_path']=PermisionsOf(request,'View Path').has_permission()
     context['is_account']=PermisionsOf(request,'View Bank Account').has_permission()
     context['is_patient']=PermisionsOf(request,'View Patient').has_permission()
+    context['is_patient']=PermisionsOf(request,'View Payment').has_permission()
     
     return context
