@@ -815,14 +815,20 @@ def make_payment(request, patientview_id, transaction_id):
                         payment.Created_by = request.user
                         payment.Transactions_id = transaction
                         payment.save()
-                        total_amount += form.cleaned_data.get('amount')
                         
+                total_amount = calculate_total_amount(transaction_id)        
                 invoice_number = generate_transaction_id()
                 transaction.Total_amount = total_amount
-                transaction.Advance = advance
-                transaction.Discount = discount
+                transaction.Advance += advance
+                transaction.Discount += discount
                 transaction.Invoice_number = invoice_number
-                transaction.Balance = transaction.Total_amount - (transaction.Discount + transaction.Advance)
+                if 'paid_checkbox' in request.POST:
+                    transaction.Balance
+                else:
+                    # Calculate balance based on total amount, discount, and advance
+                    balance = total_amount - discount - advance
+                    # If balance is negative, set it to 0 to prevent negative balances
+                    transaction.Balance = max(balance, Decimal('0.00')) 
                 transaction.save()
                 
                 messages.success(request, 'Payment made successfully.')
@@ -836,7 +842,7 @@ def make_payment(request, patientview_id, transaction_id):
                 messages.error(request, error_message)
                 return HttpResponseRedirect(reverse('make_payment', args=[patientview_id, transaction_id]))
         else:
-            formset = PaymentFormSet(queryset=payments)
+            formset = PaymentFormSet(queryset=Payment.objects.none())
         
         context = {
             'formset': formset,
