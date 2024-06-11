@@ -180,7 +180,7 @@ class PaymentForm(forms.ModelForm):
         model = Payment
         fields = ['amount', 'Remark']
         widgets = {
-            'amount': forms.TextInput(attrs={'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
             'Remark': forms.Textarea(attrs={'rows': 1, 'cols': 30, 'style': 'height: auto;', 'class': 'form-control'}),
         }
     def __init__(self, *args, **kwargs):

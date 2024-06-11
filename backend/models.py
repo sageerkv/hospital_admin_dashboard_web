@@ -199,10 +199,10 @@ class Transactions(models.Model):
     Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_transactions', null=True, blank=True)
     User = models.ForeignKey(Patient_And_Client, on_delete=models.CASCADE, related_name='Patient_And_Client_transactions', null=True, blank=True)
     Total_amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    Paid_amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
     Advance = models.DecimalField(max_digits=19, decimal_places=2,default=0)
     Balance = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
     Discount = models.DecimalField(max_digits=19, decimal_places=2,default=0)
-    Account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name='Accounts', null=True, blank=True)
     
     def save(self, *args, **kwargs):
                 
@@ -219,6 +219,8 @@ class Transactions(models.Model):
     
 class Payment(models.Model):
     amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    Account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name='Accounts', null=True, blank=True)
     Remark = models.TextField(null=True, blank=True)
     Created_at = models.DateTimeField(auto_now_add=True)
     Updated_at = models.DateTimeField(auto_now=True)

@@ -49,11 +49,11 @@
       <p style="display: flex;justify-content: end;column-gap: 10px;"> 
           
           {% if request.user.is_superuser %}
-              <button class="btn btn-primary" type="button">Add New Payment</button>
+          <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#markAsPaidModal" data-action="addPayment">Add New Payment</a>
           {% else %}
               {% for i in request.user.role.permissions.all %}
                   {% if i.path_name == 'Add Payment' %}
-                  <button class="btn btn-primary" type="button">Add New Payment</button>
+                  <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#markAsPaidModal" data-action="addPayment">Add New Payment</a>
                   {% endif %}
               {% endfor %}
           {% endif %}
@@ -71,104 +71,165 @@
             </h5>
             {% endif %}
           </div>
-          <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <table class="table table-bordered" width="100%" cellspacing="0">
               <thead>
                   <tr>
                       <th>Date</th>
-                      <th>Amount</th>
                       <th>Remark</th>
+                      <th>Amount</th>
                   </tr>
               </thead>
               <tbody>
                   {% for payment in payments %}
                   <tr>
                       <td>{{ payment.Created_at|date:"j/F/Y" }}</td>
-                      <td>{{ payment.amount }}</td>
                       <td>{% if payment.Remark %}{{ payment.Remark }}{% endif %}</td>
+                      <td>{{ payment.amount }} - {{payment.Account}}</td>
                   </tr>
                   {% endfor %}
+                  <tr>
+                    <td></td>
+                    <td><b>Total</b></td>
+                    <td><b>{{transaction.Total_amount}}</b></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>Discount</td>
+                    <td>{{transaction.Discount}}</td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>Advance</td>
+                    <td>{{transaction.Advance}}</td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td style="color:green;font-weight:bolder;">Paid Amount</td>
+                    <td style="color:green;font-weight:bolder;">{{transaction.Paid_amount}}</td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td style="color:red;"><b>Balance</b></td>
+                    <td style="display: flex;justify-content: space-between;color:red;"><b>{{transaction.Balance}}</b> 
+                      {% if transaction.Balance > 0 %}
+                      <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#markAsPaidModal" data-action="markAsPaid">Mark as Paid</a>
+                      {% endif %}
+                    </td>
+                  </tr>
               </tbody>
           </table>
-          <hr>
+          {% else %}
+          <label for="" class="text-primary">No Matches Found</label>
           {% endif %}
-          <div class="d-flex justify-content-between">
-            <h4 class="card-title">Payment Form</h4>
-          </div>
-          <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ formset.management_form }}
-            <div class="col-12">
-              <div class="row" id="formset">
-                {% for form in formset %}
-                <div class="col-md-6 col-lg-6">
-                    <div class="form-group">
-                        <label class="form-label">Amount</label>
-                        {{ form.amount }}
-                    </div>
-                </div>
-                <div class="col-md-5 col-lg-5">
-                    <div class="form-group">
-                        <label for="addon_price">Remark</label>
-                        {{ form.Remark }}
-                    </div>
-                </div>
-                {% endfor %}
-                <div class="col-md-1 col-lg-1">
-                    <button id="add-more" class="btn btn-sm btn-primary mb-3"  type="button" style="margin-top: 36px;"><span>&plus;</span></button>
-                </div>
-              </div>
-                
-              <div class="row" id="empty_form" style="display: none;">
-                <div class="col-md-12">
-                  <div class="row">
-                    <div class="col-md-6 col-lg-6">
-                        <div class="form-group">
-                            <label class="form-label">Amount</label>
-                            <input type="text" name="form-__prefix__-amount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-md-5 col-lg-5">
-                        <div class="form-group">
-                            <label for="addon_price">Remark</label>
-                            <textarea name="form-__prefix__-Remark" class="form-control"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-md-1 col-lg-1">
-                        <button type="button" class="btn btn-sm btn-info delete-row" style="margin-top: 36px;"><span>&minus;</span></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-md-1 col-lg-1">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="paid_checkbox" id="paid_checkbox">
-                    <label class="form-check-label" for="paid_checkbox">
-                        Paid
-                    </label>
-                  </div>
-                </div>
-                <div class="col-md-6 col-lg-6">
-                  <div class="form-group">
-                      <label class="form-label">Discount</label>
-                      <input type="number" name="Discount" class="form-control" value="0">
-                  </div>
-                </div>
-                <div class="col-md-5 col-lg-5">
-                  <div class="form-group">
-                      <label class="form-label">Advance</label>
-                      <input type="number" name="Advance" class="form-control" value="0">
-                  </div>
-                </div>
-              <div>
-            </div>
-           
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </form>
         </div>
       </div>
 
+  </div>
+</div>
+
+<!-- Modal -->
+<!-- "Payment form" Modal -->
+<div class="modal fade" id="markAsPaidModal" tabindex="-1" role="dialog" aria-labelledby="markAsPaidModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="markAsPaidModalLabel">Payment Form</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearForm()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="paymentForm" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ formset.management_form }}
+              <div class="col-12">
+                <div class="row pay_formss" id="formset">
+                  {% for form in formset %}
+                  <div class="col-md-6 col-lg-6">
+                      <div class="form-group">
+                          <label class="form-label">Amount</label>
+                          {{ form.amount }}
+                      </div>
+                  </div>
+                  <div class="col-md-5 col-lg-5">
+                      <div class="form-group">
+                          <label for="addon_price">Remark</label>
+                          {{ form.Remark }}
+                      </div>
+                  </div>
+                  {% endfor %}
+                  <div class="col-md-1 col-lg-1">
+                      <button id="add-more" class="btn btn-sm btn-primary mb-3"  type="button" style="margin-top: 36px;"><span>&plus;</span></button>
+                  </div>
+                </div>
+                  
+                <div class="row" id="empty_form" style="display: none;">
+                  <div class="col-md-12">
+                    <div class="row">
+                      <div class="col-md-6 col-lg-6">
+                          <div class="form-group">
+                              <label class="form-label">Amount</label>
+                              <input type="text" name="form-__prefix__-amount" class="form-control">
+                          </div>
+                      </div>
+                      <div class="col-md-5 col-lg-5">
+                          <div class="form-group">
+                              <label for="addon_price">Remark</label>
+                              <textarea rows=1, cols=30, name="form-__prefix__-Remark" class="form-control"></textarea>
+                          </div>
+                      </div>
+                      <div class="col-md-1 col-lg-1">
+                          <button type="button" class="btn btn-sm btn-info delete-row" style="margin-top: 36px;"><span>&minus;</span></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <hr id="hr">
+                <div class="row">
+                  <div class="col-md-12 col-lg-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="paid_checkbox" id="paid_checkbox">
+                      <label class="form-check-label" for="paid_checkbox">
+                          Paid
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-4 col-lg-4" id="Discount_field">
+                    <div class="form-group">
+                        <label class="form-label">Discount</label>
+                        <input type="number" name="Discount" class="form-control" value="0">
+                    </div>
+                  </div>
+                  <div class="col-md-4 col-lg-4" id="advance_field">
+                    <div class="form-group">
+                        <label class="form-label  advance-field">Advance</label>
+                        <label class="form-label  amount-field">Amount</label>
+                        <input type="number" name="Advance" class="form-control advance-field" value="0">
+                        <input type="number" name="mark_as_paid" class="form-control  amount-field" value="{{ transaction.Balance }}">
+                    </div>
+                  </div>
+                
+                  <div class="col-md-4 col-lg-4" id="account_field">
+                    <div class="form-group">
+                        <label class="form-label">Account</label>
+                        <select name="Account" class="form-control">
+                            <option value="">Select Account</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}">{{ account.Name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                  </div>
+                <div>
+              </div>
+              <div class="col-md-12 col-lg-12">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </form>
+          </div>
+      </div>
   </div>
 </div>
 
@@ -191,5 +252,74 @@
   });
 </script>
 
+<script>
+  $(document).ready(function() {
+      $('#markAsPaidModal').on('show.bs.modal', function (event) {
+          var button = $(event.relatedTarget); // Button that triggered the modal
+          var modal = $(this);
+          // Pass any necessary data to the modal here using data attributes
+      });
 
+      $('#markAsPaidModal').on('hidden.bs.modal', function (event) {
+          location.reload(); // Reload the page when the modal is closed
+      });
+
+      function clearForm() {
+          // Assuming your form has an ID of "paymentForm"
+          document.getElementById("paymentForm").reset(); // Reset the form
+      }
+  });
+</script>
+
+<script>
+  $(document).ready(function() {
+      // Function to show only "Advance" and "Account" fields
+      function showAppropriateFields(action) {
+          // Show all form groups within the modal body
+          $('.modal-body').find('.form-group').hide();
+          
+          if (action === 'addPayment') {
+              // Show all form groups when adding a new payment
+              $('.modal-body').find('.form-group').show();
+              $('.modal-body').find('.form-check').show();
+              $('.modal-body').find('.advance-field').show();
+              $('.modal-body').find('.amount-field').hide();
+          } else if (action === 'markAsPaid') {
+              // Show only "Advance" and "Account" fields when marking as paid
+              $('.modal-body').find('input[name="Advance"]').closest('.form-group').show();
+              $('.modal-body').find('select[name="Account"]').closest('.form-group').show();
+              $('.modal-body').find('.amount-field').show();
+              $('.modal-body').find('.advance-field').hide();
+              $('.modal-body').find('.form-check').hide();
+              $('.modal-body').find('#hr').hide();
+              $('.modal-body').find('.pay_formss').hide();
+              $('.modal-body').find('#Discount_field').hide();
+          }
+      }
+
+      // Call the showAppropriateFields function when the modal is shown
+      $('#markAsPaidModal').on('show.bs.modal', function (event) {
+          var button = $(event.relatedTarget); // Button that triggered the modal
+          var action = button.data('action'); // Extract action from data-attribute
+          showAppropriateFields(action);
+      });
+  });
+</script>
+<script>
+  $(document).ready(function() {
+
+      // Listen for changes in the checkbox
+      $('#paid_checkbox').change(function() {
+          if ($(this).is(':checked')) {
+              $('#account_field').show(); // Show the Account field when checkbox is checked
+              $('#advance_field').hide();
+              $('#Discount_field').hide();
+          } else { // Hide the Account field when checkbox is unchecked
+            $('#account_field').show(); // Show the Account field when checkbox is checked
+            $('#advance_field').show();
+            $('#Discount_field').show();
+          }
+      });
+  });
+</script>
 {% endblock Page_Content %}

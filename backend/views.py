@@ -787,6 +787,9 @@ def transaction_detail(request, patientview_id, transaction_id):
     else:
         return JsonResponse({'Date': '', 'Remark': ''})
     
+def calculate_total_amount(transaction_id):
+    total = Payment.objects.filter(Transactions_id=transaction_id).aggregate(total_amount=Sum('amount'))['total_amount']
+    return total if total is not None else Decimal('0.00')
     
 #  patient payment 
 @login_required(login_url="login")
@@ -796,39 +799,65 @@ def make_payment(request, patientview_id, transaction_id):
         context = get_menu(request)
         transaction = get_object_or_404(Transactions, id=transaction_id)
         payments = Payment.objects.filter(Transactions_id=transaction)
-        
-        def calculate_total_amount(transaction_id):
-            payments = Payment.objects.filter(Transactions_id=transaction_id)
-            total_amount = sum(payment.amount for payment in payments)
-            return total_amount
+        accounts = Accounts.objects.all()
                 
         if request.method == 'POST':
             formset = PaymentFormSet(request.POST, queryset=payments)
             advance = decimal.Decimal(request.POST.get('Advance', '0'))
             discount = decimal.Decimal(request.POST.get('Discount', '0'))
+            
+            new_total_amount = Decimal('0.00')
+            new_discount = Decimal('0.00')
+            new_advance = Decimal('0.00')
+            
             if formset.is_valid():
-                total_amount = decimal.Decimal(0)
+                new_discount = Decimal(request.POST.get('Discount', '0'))
+                new_advance = Decimal(request.POST.get('Advance', '0')) 
+                mark_as_paid = Decimal(request.POST.get('mark_as_paid', '0'))
+                account_id = request.POST.get('Account')
+                account = get_object_or_404(Accounts, pk=account_id)
                 for form in formset:
-                    if form.cleaned_data.get('amount') and form.cleaned_data.get('Remark'):
+                    if form.cleaned_data.get('amount'):
+                        new_total_amount += form.cleaned_data['amount']
+                        
+                for form in formset:
+                    if form.cleaned_data.get('amount'):
                         # Save each payment entry to the database
                         payment = form.save(commit=False)
                         payment.Created_by = request.user
                         payment.Transactions_id = transaction
+                        payment.Account = account
+                        if new_discount > 0:
+                            payment.discount_amount = (new_discount / new_total_amount) * payment.amount
                         payment.save()
                         
-                total_amount = calculate_total_amount(transaction_id)        
-                invoice_number = generate_transaction_id()
+                 
+                total_amount = calculate_total_amount(transaction.id) 
+                
+                if not transaction.Invoice_number:
+                    transaction.Invoice_number = generate_transaction_id()
+                
                 transaction.Total_amount = total_amount
-                transaction.Advance += advance
-                transaction.Discount += discount
-                transaction.Invoice_number = invoice_number
+                transaction.Advance += new_advance
+                transaction.Discount += new_discount
+                
                 if 'paid_checkbox' in request.POST:
                     transaction.Balance
+                    transaction.Paid_amount += new_total_amount
                 else:
-                    # Calculate balance based on total amount, discount, and advance
-                    balance = total_amount - discount - advance
+                    if new_advance:
+                        transaction.Paid_amount += new_advance
+                    else:
+                        transaction.Paid_amount += mark_as_paid
+                    if new_advance:
+                        # Calculate balance based on total amount, discount, and advance
+                        new_balance = new_total_amount - new_discount - new_advance
+                    else:
+                        # Calculate balance based on total amount, discount, and advance
+                        new_balance = new_total_amount - new_discount - mark_as_paid
                     # If balance is negative, set it to 0 to prevent negative balances
-                    transaction.Balance = max(balance, Decimal('0.00')) 
+                    transaction.Balance += new_balance 
+                    
                 transaction.save()
                 
                 messages.success(request, 'Payment made successfully.')
@@ -847,7 +876,8 @@ def make_payment(request, patientview_id, transaction_id):
         context = {
             'formset': formset,
             'transaction': transaction,
-            'payments': payments
+            'payments': payments,
+            'accounts': accounts
         }
 
         return render(request,'patient/patient_payment.html',context)
