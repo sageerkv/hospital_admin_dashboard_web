@@ -532,6 +532,21 @@ def View_account(request):
         # paginator=Paginator(bank_accounts,20)
         # page_num=request.GET.get('page')
         # bank_accounts_page = paginator.get_page(page_num)
+        account_totals = {}
+        for account in bank_accounts:
+            totals = Payment.objects.filter(Account=account).aggregate(
+                total_amount=Sum('amount'),
+                total_discount_amount=Sum('discount_amount')
+            )
+            
+            total_amount = totals['total_amount'] or 0
+            total_discount_amount = totals['total_discount_amount'] or 0
+            
+            account_total = total_amount - total_discount_amount
+            
+            account_totals[account.id] = account_total
+            
+        context['account_totals'] = account_totals
         context['bank_accounts'] = bank_accounts
         return render(request,'bank_account/form_data.html',context)
     else:
@@ -843,7 +858,7 @@ def make_payment(request, patientview_id, transaction_id):
                 
                 if 'paid_checkbox' in request.POST:
                     transaction.Balance
-                    transaction.Paid_amount += new_total_amount
+                    transaction.Paid_amount += new_total_amount - new_discount 
                 else:
                     if new_advance:
                         transaction.Paid_amount += new_advance

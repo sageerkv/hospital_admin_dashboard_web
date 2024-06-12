@@ -5,6 +5,11 @@ from backend.models import Site_settings
 
 register = template.Library()
 
+@register.filter
+def get_value(dictionary, key):
+    return dictionary.get(key, None)
+
+
 @register.filter(name='has_permission')
 def has_permission(user, permission_name):
     if user.is_superuser:
