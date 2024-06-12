@@ -797,6 +797,11 @@ def Patient_list(request, patientview_id):
             
         total_advance = patient_transactions.aggregate(Sum('Advance'))['Advance__sum'] or 0
         total_balance = patient_transactions.aggregate(Sum('Balance'))['Balance__sum'] or 0
+        
+        if total_balance > 0:
+            progress_percentage_balance = (total_amount - total_balance) / total_amount * 100
+        else:
+            progress_percentage_balance = 0
 
         if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             transaction_id = request.POST.get('transaction_id', None)
@@ -843,6 +848,7 @@ def Patient_list(request, patientview_id):
         context['progress_percentage'] = progress_percentage 
         context['total_advance'] = total_advance
         context['total_balance'] = total_balance
+        context['progress_percentage_balance'] = progress_percentage_balance
         
         return render(request, 'patient/view_patient.html', context)
     else:
