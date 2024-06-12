@@ -113,7 +113,47 @@ def delete_profile_image(request):
 
 @login_required(login_url="login")
 def index(request):
-    return render(request, 'index.html')
+    context = get_menu(request)
+    
+    all_patient = Patient_And_Client.objects.all().count()
+    # Get the current month and year
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+    current_day = datetime.now().day
+    
+    day_transactions = Transactions.objects.filter(Created_at__day=current_day)
+    day_totals = day_transactions.aggregate(
+        total_amount=Sum('Total_amount'),
+        total_discount=Sum('Discount')
+    )
+    total_day_earnings = (day_totals['total_amount'] or 0) - (day_totals['total_discount'] or 0)
+    
+    # Filter all transactions by the current month
+    monthly_transactions = Transactions.objects.filter(Created_at__month=current_month, Created_at__year=current_year)
+    
+    # Calculate the total earnings for the current month
+    monthly_totals = monthly_transactions.aggregate(
+        total_amount=Sum('Total_amount'),
+        total_discount=Sum('Discount')
+    )
+    total_monthly_earnings = (monthly_totals['total_amount'] or 0) - (monthly_totals['total_discount'] or 0)
+    
+     # Filter all transactions by the current month
+    yearly_transactions = Transactions.objects.filter(Created_at__year=current_year)
+    
+    # Calculate the total earnings for the current month
+    yearly_totals = yearly_transactions.aggregate(
+        total_amount=Sum('Total_amount'),
+        total_discount=Sum('Discount')
+    )
+    total_yearly_earnings = (yearly_totals['total_amount'] or 0) - (yearly_totals['total_discount'] or 0)
+    
+    context['all_patient'] = all_patient
+    context['total_day_earnings'] = total_day_earnings 
+    context['total_monthly_earnings'] = total_monthly_earnings 
+    context['total_yearly_earnings'] = total_yearly_earnings 
+    
+    return render(request, 'index.html', context)
 
 
 # user
@@ -744,6 +784,19 @@ def Patient_list(request, patientview_id):
         view_patient = Patient_And_Client.objects.get(id=patientview_id)
         
         patient_transactions = Transactions.objects.filter(User=view_patient)
+        
+        totals = patient_transactions.aggregate(total_amount=Sum('Total_amount'),
+                                                    total_discount=Sum('Discount'))
+        total_amount = (totals['total_amount'] or 0) - (totals['total_discount'] or 0)
+        total_paid_amount = patient_transactions.aggregate(Sum('Paid_amount'))['Paid_amount__sum'] or 0
+        
+        if total_amount > 0:
+            progress_percentage = (total_paid_amount / total_amount) * 100
+        else:
+            progress_percentage = 0
+            
+        total_advance = patient_transactions.aggregate(Sum('Advance'))['Advance__sum'] or 0
+        total_balance = patient_transactions.aggregate(Sum('Balance'))['Balance__sum'] or 0
 
         if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             transaction_id = request.POST.get('transaction_id', None)
@@ -785,6 +838,11 @@ def Patient_list(request, patientview_id):
         
         context['view_patient'] = view_patient
         context['patient_transactions'] = patient_transactions
+        context['total_amount'] = total_amount
+        context['total_paid_amount'] = total_paid_amount
+        context['progress_percentage'] = progress_percentage 
+        context['total_advance'] = total_advance
+        context['total_balance'] = total_balance
         
         return render(request, 'patient/view_patient.html', context)
     else:
