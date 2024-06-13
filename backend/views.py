@@ -121,15 +121,15 @@ def index(request):
     current_year = datetime.now().year
     current_day = datetime.now().day
     
-    day_transactions = Transactions.objects.filter(Created_at__day=current_day)
+    day_transactions = Payment.objects.filter(Updated_at__day=current_day)
     day_totals = day_transactions.aggregate(
-        total_amount=Sum('Total_amount'),
-        total_discount=Sum('Discount')
+        total_amount=Sum('amount'),
+        total_discount=Sum('discount_amount')
     )
     total_day_earnings = (day_totals['total_amount'] or 0) - (day_totals['total_discount'] or 0)
     
     # Filter all transactions by the current month
-    monthly_transactions = Transactions.objects.filter(Created_at__month=current_month, Created_at__year=current_year)
+    monthly_transactions = Transactions.objects.filter(Updated_at__month=current_month, Updated_at__year=current_year)
     
     # Calculate the total earnings for the current month
     monthly_totals = monthly_transactions.aggregate(
@@ -139,7 +139,7 @@ def index(request):
     total_monthly_earnings = (monthly_totals['total_amount'] or 0) - (monthly_totals['total_discount'] or 0)
     
      # Filter all transactions by the current month
-    yearly_transactions = Transactions.objects.filter(Created_at__year=current_year)
+    yearly_transactions = Transactions.objects.filter(Updated_at__year=current_year)
     
     # Calculate the total earnings for the current month
     yearly_totals = yearly_transactions.aggregate(
@@ -148,10 +148,44 @@ def index(request):
     )
     total_yearly_earnings = (yearly_totals['total_amount'] or 0) - (yearly_totals['total_discount'] or 0)
     
+    
+    # chart calculation total amount earned
+    monthly_chart_totals = []
+    for month in range(1, 13):
+        monthly_chart_transactions = Transactions.objects.filter(Updated_at__year=current_year, Updated_at__month=month)
+        totals = monthly_chart_transactions.aggregate(
+            total_amount=Sum('Total_amount'),
+            total_discount=Sum('Discount')
+        )
+        total_chart_earnings = float((totals['total_amount'] or 0) - (totals['total_discount'] or 0))
+        monthly_chart_totals.append(total_chart_earnings)
+        
+    # Calculate chart total for each account
+    bank_accounts = Accounts.objects.all()
+    account_totals = {}
+    account_labels = []
+    for account in bank_accounts:
+        totals = Payment.objects.filter(Account=account).aggregate(
+            total_amount=Sum('amount'),
+            total_discount_amount=Sum('discount_amount')
+        )
+        
+        total_amount = totals['total_amount'] or 0
+        total_discount_amount = totals['total_discount_amount'] or 0
+        
+        account_total = total_amount - total_discount_amount
+        account_totals[account.id] = float(account_total)
+        account_labels.append(account.Name)
+    print("---account_totals----",account_totals)
     context['all_patient'] = all_patient
     context['total_day_earnings'] = total_day_earnings 
     context['total_monthly_earnings'] = total_monthly_earnings 
     context['total_yearly_earnings'] = total_yearly_earnings 
+    # chart
+    context['monthly_chart_totals'] = monthly_chart_totals
+    context['labels'] = account_labels
+    context['account_totals'] = json.dumps(account_totals)
+    context['account_labels'] = json.dumps(account_labels)
     
     return render(request, 'index.html', context)
 
@@ -956,7 +990,8 @@ def make_payment(request, patientview_id, transaction_id):
             'formset': formset,
             'transaction': transaction,
             'payments': payments,
-            'accounts': accounts
+            'accounts': accounts,
+            'patientview_id': patientview_id
         }
 
         return render(request,'patient/patient_payment.html',context)

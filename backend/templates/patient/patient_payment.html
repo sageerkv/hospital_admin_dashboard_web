@@ -26,6 +26,9 @@
       <div  style="display: flex;align-items: center;column-gap: 23px;">
           <h3 class="m-0 font-weight-bold text-primary">TRANSACTION ID : {{transaction.id}}</h3>
       </div>
+      <div style="display: grid;justify-items: end;">
+        <a href="{% url "Patient_list" patientview_id=patientview_id %}" style="font-size: 20px;color:{%company_constant_color%};" title="Back"><i class="fas fa-arrow-left"></i></a>
+    </div>
   </div>
   <div class="card-body">
       <div class="row font-sizes">
