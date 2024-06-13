@@ -44,6 +44,14 @@
 .radio-group .form-check {
     margin-right: 15px;
 }
+.btn-hover::after {
+    content: 'Make Payment';
+}
+
+.btn-hover.hover-show-balance::after {
+    content: attr(data-amount-before) attr(data-balance);
+}
+
 
   @media(max-width: 324px) {
     .card-body {
@@ -143,11 +151,15 @@
                                     <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">₹{{total_paid_amount|floatformat:2}}</div>
                                 </div>
                                 <div class="col">
+                                    {% if progress_percentage == 100 %}
+                                    <i class="fas fa-check-circle"></i>
+                                    {% else %}
                                     <div class="progress progress-sm mr-2">
                                         <div class="progress-bar bg-success" role="progressbar"
                                             style="width: {{ progress_percentage }}%" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0"
                                             aria-valuemax="100"></div>
                                     </div>
+                                    {% endif %}
                                 </div>
                             </div>
                       </div>
@@ -263,9 +275,11 @@
                           <button type="button" class="btn btn-outline-primary edit-button" data-bs-toggle="modal" data-bs-target="#exampleModal{{transaction.id}}" data-transaction-id="{{ transaction.id }}">
                             Edit
                           </button>
-                          <a href="{% url 'make_payment' view_patient.id transaction.id %}" class="btn btn-outline-success">
-                            Make Payment
-                          </a>
+                          <a href="{% url 'make_payment' view_patient.id transaction.id %}" 
+                          class="btn btn-outline-success btn-hover" 
+                          data-balance="{{ transaction.Balance }}"  data-amount-before="Balance: ₹"> 
+                    
+                       </a>
                         </td>
                     </tr>
 
@@ -422,5 +436,26 @@ $(document).ready(function() {
 
 </script>
 
-
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const buttons = document.querySelectorAll('.btn-hover');
+    
+        buttons.forEach(button => {
+            const balance = parseFloat(button.getAttribute('data-balance').replace('Balance: ', ''));
+    
+            button.addEventListener('mouseover', () => {
+                if (balance > 0) {
+                    button.classList.add('hover-show-balance');
+                }
+            });
+    
+            button.addEventListener('mouseout', () => {
+                button.classList.remove('hover-show-balance');
+            });
+        });
+    });
+    </script>
+    
+    
+    
 {% endblock Page_Content %}
