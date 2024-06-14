@@ -245,7 +245,7 @@
                                 <td><label class="{% if patient.status == 'Active' %}badge badge-success{% else %}badge badge-danger{% endif %}">
                                     {{ patient.status }}
                                 </label></td>
-                                <td>
+                                <td style="display: flex;column-gap: 10px;">
                                     {% if request.user.is_superuser %}
                                         <button onclick="window.location.href='{% url 'Edit_patient' patientedit_id=patient.id %}'" class="btn btn-primary text-white" type="button">
                                             <i class="fa fa-edit"></i>
@@ -256,6 +256,15 @@
                                             <button onclick="window.location.href='{% url 'Edit_patient' patientedit_id=patient.id %}'" class="btn btn-primary text-white" type="button">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if request.user.is_superuser %}
+                                        <a href="{% url 'Patient_list' patientview_id=patient.id %}" class="btn btn-primary">View</a>
+                                    {% else %}
+                                        {% for i in request.user.role.permissions.all %}
+                                            {% if i.path_name == 'View Patient' %}
+                                                <a href="{% url 'Patient_list' patientview_id=patient.id %}" class="btn btn-primary">View</a>
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}

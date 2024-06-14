@@ -974,6 +974,10 @@ def make_payment(request, patientview_id, transaction_id):
                 transaction.save()
                 
                 messages.success(request, 'Payment made successfully.')
+                if mark_as_paid:
+                    fnlog(request, None, 'Admin_and_Staff', f"Payment Created: {transaction.Invoice_number} - Total Amount: {mark_as_paid} - Payment Type: {account}", "")
+                else:
+                    fnlog(request, None, 'Admin_and_Staff', f"Payment Created: {transaction.Invoice_number} - Total Amount: {new_total_amount} - Discount: {new_discount} - Payment Type: {account}", "")
                 return HttpResponseRedirect(reverse('make_payment', args=[patientview_id, transaction_id]))
             else:
                 error_message = "Error making payment. Please correct the following errors:"
