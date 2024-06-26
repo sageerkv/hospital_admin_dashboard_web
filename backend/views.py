@@ -974,8 +974,8 @@ def make_payment(request, patientview_id, transaction_id):
                     else:
                         # Calculate balance based on total amount, discount, and advance
                         new_balance = new_total_amount - new_discount - mark_as_paid
-                    # If balance is negative, set it to 0 to prevent negative balances
-                    transaction.Balance += new_balance 
+                    # # If balance is negative, set it to 0 to prevent negative balances
+                    # transaction.Balance += new_balance 
                     
                 transaction.save()
                 
