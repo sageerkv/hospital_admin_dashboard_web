@@ -901,7 +901,8 @@ def transaction_detail(request, patientview_id, transaction_id):
         return JsonResponse({'Date': '', 'Remark': ''})
     
 def calculate_total_amount(transaction_id):
-    total = Payment.objects.filter(Transactions_id=transaction_id).aggregate(total_amount=Sum('amount'))['total_amount']
+    transaction = get_object_or_404(Transactions, id=transaction_id)
+    total = transaction.Payments.aggregate(total_amount=Sum('amount'))['total_amount']
     return total if total is not None else Decimal('0.00')
     
 #  patient payment 
@@ -911,7 +912,7 @@ def make_payment(request, patientview_id, transaction_id):
     if request.user.is_superuser or PermisionsOf(request, 'View Payment').has_permission():
         context = get_menu(request)
         transaction = get_object_or_404(Transactions, id=transaction_id)
-        payments = Payment.objects.filter(Transactions_id=transaction)
+        payments = Payment.objects.filter(transactions=transaction)
         accounts = Accounts.objects.all()
                 
         if request.method == 'POST':
@@ -929,22 +930,27 @@ def make_payment(request, patientview_id, transaction_id):
                 mark_as_paid = Decimal(request.POST.get('mark_as_paid', '0'))
                 account_id = request.POST.get('Account')
                 account = get_object_or_404(Accounts, pk=account_id)
+                
                 for form in formset:
                     if form.cleaned_data.get('amount'):
                         new_total_amount += form.cleaned_data['amount']
-                        
+                
+                saved_payments = []        
                 for form in formset:
                     if form.cleaned_data.get('amount'):
                         # Save each payment entry to the database
                         payment = form.save(commit=False)
                         payment.Created_by = request.user
-                        payment.Transactions_id = transaction
                         payment.Account = account
                         if new_discount > 0:
                             payment.discount_amount = (new_discount / new_total_amount) * payment.amount
                         payment.save()
-                        
+                        saved_payments.append(payment)
                  
+                 
+                # Associate payments with the transaction
+                transaction.Payments.add(*saved_payments)
+
                 total_amount = calculate_total_amount(transaction.id) 
                 
                 if not transaction.Invoice_number:
@@ -972,6 +978,7 @@ def make_payment(request, patientview_id, transaction_id):
                     transaction.Balance += new_balance 
                     
                 transaction.save()
+                
                 
                 messages.success(request, 'Payment made successfully.')
                 if mark_as_paid:

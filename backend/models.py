@@ -203,6 +203,7 @@ class Transactions(models.Model):
     Advance = models.DecimalField(max_digits=19, decimal_places=2,default=0)
     Balance = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
     Discount = models.DecimalField(max_digits=19, decimal_places=2,default=0)
+    Payments = models.ManyToManyField('Payment', related_name='transactions', blank=True)
     
     def save(self, *args, **kwargs):
                 
@@ -225,7 +226,6 @@ class Payment(models.Model):
     Created_at = models.DateTimeField(auto_now_add=True)
     Updated_at = models.DateTimeField(auto_now=True)
     Created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_payment', null=True, blank=True)
-    Transactions_id = models.ForeignKey(Transactions, on_delete=models.CASCADE, related_name='Payment', null=True, blank=True)
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)   
@@ -235,4 +235,4 @@ class Payment(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return f"{self.Transactions_id} - {self.Created_by}"
+        return f"{self.id} - {self.Created_by}"
