@@ -221,6 +221,7 @@ class Transactions(models.Model):
 class Payment(models.Model):
     amount = models.DecimalField(max_digits=19, decimal_places=2, blank=True, default=0)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    Paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     Account = models.ForeignKey(Accounts, on_delete=models.CASCADE, related_name='Accounts', null=True, blank=True)
     Remark = models.TextField(null=True, blank=True)
     Created_at = models.DateTimeField(auto_now_add=True)

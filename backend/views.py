@@ -123,10 +123,9 @@ def index(request):
     
     day_transactions = Payment.objects.filter(Updated_at__day=current_day)
     day_totals = day_transactions.aggregate(
-        total_amount=Sum('amount'),
-        total_discount=Sum('discount_amount')
+        total_paid_amount=Sum('Paid_amount')
     )
-    total_day_earnings = (day_totals['total_amount'] or 0) - (day_totals['total_discount'] or 0)
+    total_day_earnings = (day_totals['total_paid_amount'] or 0)
     
     # Filter all transactions by the current month
     monthly_transactions = Transactions.objects.filter(Updated_at__month=current_month, Updated_at__year=current_year)
@@ -920,9 +919,7 @@ def make_payment(request, patientview_id, transaction_id):
             advance = decimal.Decimal(request.POST.get('Advance', '0'))
             discount = decimal.Decimal(request.POST.get('Discount', '0'))
             
-            new_total_amount = Decimal('0.00')
-            new_discount = Decimal('0.00')
-            new_advance = Decimal('0.00')
+            new_total_amount, new_discount, new_advance = Decimal('0.00'), Decimal('0.00'), Decimal('0.00')
             
             if formset.is_valid():
                 new_discount = Decimal(request.POST.get('Discount', '0'))
@@ -935,7 +932,10 @@ def make_payment(request, patientview_id, transaction_id):
                     if form.cleaned_data.get('amount'):
                         new_total_amount += form.cleaned_data['amount']
                 
-                saved_payments = []        
+                saved_payments = []     
+                advance_per_payment = new_advance / len(formset)
+                # mark_per_payment = mark_as_paid / len(formset)
+                # print("mark_per_payment",mark_per_payment)
                 for form in formset:
                     if form.cleaned_data.get('amount'):
                         # Save each payment entry to the database
@@ -943,7 +943,17 @@ def make_payment(request, patientview_id, transaction_id):
                         payment.Created_by = request.user
                         payment.Account = account
                         if new_discount > 0:
-                            payment.discount_amount = (new_discount / new_total_amount) * payment.amount
+                            payment.discount_amount = (new_discount / new_total_amount) * payment.amount 
+                        if new_advance > 0:
+                            payment.Paid_amount += advance_per_payment
+                        else :
+                            payment.Paid_amount += payment.amount - payment.discount_amount
+                            
+                        # if mark_as_paid > 0:
+                        #     payment.Paid_amount += mark_per_payment
+                        # else :
+                        #     payment.Paid_amount += payment.amount - payment.discount_amount
+                            
                         payment.save()
                         saved_payments.append(payment)
                  
@@ -966,15 +976,11 @@ def make_payment(request, patientview_id, transaction_id):
                 else:
                     if new_advance:
                         transaction.Paid_amount += new_advance
-                    else:
-                        transaction.Paid_amount += mark_as_paid
-                    if new_advance:
-                        # Calculate balance based on total amount, discount, and advance
                         new_balance = new_total_amount - new_discount - new_advance
                     else:
-                        # Calculate balance based on total amount, discount, and advance
+                        transaction.Paid_amount += mark_as_paid
                         new_balance = new_total_amount - new_discount - mark_as_paid
-                    # If balance is negative, set it to 0 to prevent negative balances
+                   
                     transaction.Balance += new_balance 
                     
                 transaction.save()
