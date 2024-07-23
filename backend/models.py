@@ -189,7 +189,7 @@ class Transactions(models.Model):
                 (0, "Patient"),
                 (1, "Client"),
     )
-    Invoice_number = models.CharField(max_length=255, blank=True)
+    Invoice_number = models.CharField(max_length=255, blank=True, unique=True)
     Type = models.IntegerField(choices=User_type, blank=True, default=0)
     Transaction_type = models.IntegerField(choices=Transactions_type, blank=True, default=0)
     Date = models.DateField()

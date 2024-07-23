@@ -785,21 +785,23 @@ def Edit_patient(request,patientedit_id):
         return redirect("admin")
 
 def generate_transaction_id():
-    last_transaction = Transactions.objects.all().order_by('id').last()
-    if not last_transaction or not last_transaction.Invoice_number.startswith('invd-'):
-        return 'invd-01'
-    try:
-        new_number = int(last_transaction.Invoice_number.split('-')[1]) + 1
-    except (IndexError, ValueError):
-        return 'invd-01'
-    
-    # Check if the new number already exists
-    new_invoice_number = f'invd-{new_number:02d}'
-    while Transactions.objects.filter(Invoice_number=new_invoice_number).exists():
-        new_number += 1
+    with transaction.atomic():
+        last_transaction = Transactions.objects.filter(Invoice_number__startswith='invd-').order_by('id').last()
+        if not last_transaction:
+            return 'invd-01'
+
+        try:
+            new_number = int(last_transaction.Invoice_number.split('-')[1]) + 1
+        except (IndexError, ValueError):
+            return 'invd-01'
+        
+        # Generate a unique invoice number
         new_invoice_number = f'invd-{new_number:02d}'
-    
-    return new_invoice_number
+        while Transactions.objects.filter(Invoice_number=new_invoice_number).exists():
+            new_number += 1
+            new_invoice_number = f'invd-{new_number:02d}'
+        
+        return new_invoice_number
 
 
 @login_required(login_url="login")
