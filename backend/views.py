@@ -165,15 +165,11 @@ def index(request):
     account_labels = []
     for account in bank_accounts:
         totals = Payment.objects.filter(Account=account).aggregate(
-            total_amount=Sum('amount'),
-            total_discount_amount=Sum('discount_amount')
+            total_paid_amount=Sum('Paid_amount')
         )
         
-        total_amount = totals['total_amount'] or 0
-        total_discount_amount = totals['total_discount_amount'] or 0
-        
-        account_total = total_amount - total_discount_amount
-        account_totals[account.id] = float(account_total)
+        total_amount = totals['total_paid_amount'] or 0
+        account_totals[account.id] = float(total_amount)
         account_labels.append(account.Name)
     print("---account_totals----",account_totals)
     context['all_patient'] = all_patient
@@ -608,16 +604,12 @@ def View_account(request):
         account_totals = {}
         for account in bank_accounts:
             totals = Payment.objects.filter(Account=account).aggregate(
-                total_amount=Sum('amount'),
-                total_discount_amount=Sum('discount_amount')
+                total_paid_amount=Sum('Paid_amount')
             )
             
-            total_amount = totals['total_amount'] or 0
-            total_discount_amount = totals['total_discount_amount'] or 0
+            total_amount = totals['total_paid_amount'] or 0
             
-            account_total = total_amount - total_discount_amount
-            
-            account_totals[account.id] = account_total
+            account_totals[account.id] = total_amount
             
         context['account_totals'] = account_totals
         context['bank_accounts'] = bank_accounts
