@@ -214,7 +214,7 @@ class Transactions(models.Model):
         ordering = ['Type']
 
     def __str__(self):
-        return f"{self.id} - {self.Created_by}"
+        return f"Transaction {self.id} - {self.Created_by}"
     
     
     
@@ -236,4 +236,4 @@ class Payment(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return f"{self.id} - {self.Created_by}"
+        return f"Payment {self.id} - {self.Created_by}"

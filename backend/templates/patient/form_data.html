@@ -3,6 +3,18 @@
 {% load custom_filters %}
 {% block Page_Content %}
 <style>
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 1px solid #e3e6f0;
+        border-radius: .35rem;
+        height: 100%;
+    }
     .profile-images {
         width: 86px;
         height: auto;
@@ -135,7 +147,7 @@
                                     <p class="card-text d-flex justify-content-center" style="padding:5px;font-weight: 800;">{{ patient.User_id }}</p>
                                 </div>
 
-                                <div class="web mr-auto">
+                                <div class="web mr-auto" style="display: flex;flex-direction: column;justify-content: space-between;">
                                     <h5 class="card-title">{{ patient.first_name }} {% if patient.last_name %}{{patient.last_name}}{% endif %}</h5>
                                     <p class="card-text">{{ patient.Phone_number }}</p>
 
