@@ -78,44 +78,8 @@
         color: #fff;
         text-decoration: none;
         background-color: {%company_constant_color%} !important;
-    }
-    .slide-alert {
-        opacity: 0;
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      
-      .animate {
-        animation: slideInRight 0.5s ease forwards;
-      }
-      
-      .hide {
-        animation: slideOutRight 0.5s ease forwards;
-      }
-      
-      @keyframes slideInRight {
-        from {
-          opacity: 0;
-          transform: translateX(100%);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(-50%);
-        }
-      }
-      
-      @keyframes slideOutRight {
-        from {
-          opacity: 1;
-          transform: translateX(-50%);
-        }
-        to {
-          opacity: 0;
-          transform: translateX(100%);
-        }
-      }
-      .mob-add{
+    } 
+    .mob-add{
         display:none;
     }
       @media(max-width: 1054px) {
@@ -487,38 +451,6 @@
                 </nav>
                 <!-- End of Topbar -->
 
-                {% if messages %}
-                <div class="messages"style="display: flex;margin-top: 30px;">
-    
-                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                        </symbol>
-                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                        </symbol>
-                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                        </symbol>
-                    </svg>
-    
-                    {% for message in messages %}
-                        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'info' %}alert-primary{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'error' %}alert-danger{% endif %} slide-alert d-flex align-items-center" role="alert" style="padding: 25px;">
-                        {% if message.tags == 'success' %}
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
-                        {% elif message.tags == 'info' %}
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
-                        {% elif message.tags == 'warning' or message.tags == 'error' %}
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                        {% endif %}
-                        <div style="margin-left: 15px;">
-                            {{ message }}
-                        </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
                 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
@@ -881,20 +813,43 @@
         </div>
     </div>
 
+    <!-- Add jQuery CDN before including Toastr -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
     <script>
-        // Add animation class to messages when document is ready
-        document.addEventListener("DOMContentLoaded", function() {
-            var alerts = document.querySelectorAll('.slide-alert');
-            alerts.forEach(function(alert) {
-            alert.classList.add('animate');
-            setTimeout(function() {
-                alert.classList.add('hide');
-                setTimeout(function() {
-                    window.location.reload();
-                  });
-            }, 2000); // Change the time as needed for the message display duration
-            });
-        });
+        toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "1000",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "slideDown",
+            "hideMethod": "slideUp"
+        };
+
+        // Display Toastr notifications based on Django messages
+        {% for message in messages %}
+            if ("{{ message.tags }}" === "success") {
+            toastr.success("{{ message|safe }}");
+            } else if ("{{ message.tags }}" === "error") {
+            toastr.error("{{ message }}");
+            } else if ("{{ message.tags }}" === "info") {
+            toastr.info("{{ message|safe }}");
+            } else if ("{{ message.tags }}" === "warning") {
+            toastr.warning("{{ message|safe }}");
+            }
+        {% endfor %}
     </script>
     <!-- Bootstrap core JavaScript-->
     <script src="{% static "vendor/jquery/jquery.min.js" %}"></script>

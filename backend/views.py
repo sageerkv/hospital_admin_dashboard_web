@@ -901,112 +901,89 @@ def calculate_total_amount(transaction_id):
 #  patient payment 
 @login_required(login_url="login")
 def make_payment(request, patientview_id, transaction_id):
-
     if request.user.is_superuser or PermisionsOf(request, 'View Payment').has_permission():
         context = get_menu(request)
         transaction = get_object_or_404(Transactions, id=transaction_id)
         payments = Payment.objects.filter(transactions=transaction)
         accounts = Accounts.objects.all()
-                
+
         if request.method == 'POST':
             formset = PaymentFormSet(request.POST, queryset=payments)
-            advance = decimal.Decimal(request.POST.get('Advance', '0'))
-            discount = decimal.Decimal(request.POST.get('Discount', '0'))
-            
-            new_total_amount, new_discount, new_advance = Decimal('0.00'), Decimal('0.00'), Decimal('0.00')
-            
+            advance = Decimal(request.POST.get('Advance', '0'))
+            discount = Decimal(request.POST.get('Discount', '0'))
+            mark_as_paid = Decimal(request.POST.get('mark_as_paid', '0'))
+            account_id = request.POST.get('Account')
+            account = get_object_or_404(Accounts, pk=account_id)
+
+            payment_addition = advance if advance else mark_as_paid
+            new_total_amount, new_discount, new_advance = Decimal('0.00'), discount, advance
+
             if formset.is_valid():
-                new_discount = Decimal(request.POST.get('Discount', '0'))
-                new_advance = Decimal(request.POST.get('Advance', '0')) 
-                mark_as_paid = Decimal(request.POST.get('mark_as_paid', '0'))
-                account_id = request.POST.get('Account')
-                account = get_object_or_404(Accounts, pk=account_id)
-                
                 for form in formset:
                     if form.cleaned_data.get('amount'):
                         new_total_amount += form.cleaned_data['amount']
-                
-                saved_payments = []     
-                advance_per_payment = new_advance / len(formset)
-                # mark_per_payment = mark_as_paid / len(formset)
-                # print("mark_per_payment",mark_per_payment)
+
+                saved_payments = []
+                advance_per_payment = new_advance / len(formset) if new_advance else Decimal('0.00')
+
                 for form in formset:
                     if form.cleaned_data.get('amount'):
-                        # Save each payment entry to the database
                         payment = form.save(commit=False)
                         payment.Created_by = request.user
                         payment.Account = account
                         if new_discount > 0:
-                            payment.discount_amount = (new_discount / new_total_amount) * payment.amount 
+                            payment.discount_amount = (new_discount / new_total_amount) * payment.amount
                         if new_advance > 0:
                             payment.Paid_amount += advance_per_payment
-                        else :
+                        else:
                             payment.Paid_amount += payment.amount - payment.discount_amount
-                            
-                        # if mark_as_paid > 0:
-                        #     payment.Paid_amount += mark_per_payment
-                        # else :
-                        #     payment.Paid_amount += payment.amount - payment.discount_amount
-                            
                         payment.save()
                         saved_payments.append(payment)
-                 
-                 
+
                 # Associate payments with the transaction
                 transaction.Payments.add(*saved_payments)
 
-                total_amount = calculate_total_amount(transaction.id) 
-                
+                total_amount = calculate_total_amount(transaction.id)
+
                 if not transaction.Invoice_number:
                     transaction.Invoice_number = generate_transaction_id()
-                
+
                 transaction.Total_amount = total_amount
                 transaction.Advance += new_advance
                 transaction.Discount += new_discount
-                
+
                 if 'paid_checkbox' in request.POST:
-                    transaction.Balance
-                    transaction.Paid_amount += new_total_amount - new_discount 
+                    transaction.Paid_amount += new_total_amount - new_discount
                 else:
-                    if new_advance:
-                        transaction.Paid_amount += new_advance
-                        new_balance = new_total_amount - new_discount - new_advance
-                    else:
-                        transaction.Paid_amount += mark_as_paid
-                        new_balance = new_total_amount - new_discount - mark_as_paid
-                   
-                    transaction.Balance += new_balance 
-                    
+                    transaction.Paid_amount += payment_addition
+                    new_balance = new_total_amount - new_discount - payment_addition
+                    transaction.Balance += new_balance
+
                 transaction.save()
-                
-                
+
                 messages.success(request, 'Payment made successfully.')
-                if mark_as_paid:
-                    fnlog(request, None, 'Admin_and_Staff', f"Payment Created: {transaction.Invoice_number} - Total Amount: {mark_as_paid} - Payment Type: {account}", "")
-                else:
-                    fnlog(request, None, 'Admin_and_Staff', f"Payment Created: {transaction.Invoice_number} - Total Amount: {new_total_amount} - Discount: {new_discount} - Payment Type: {account}", "")
+                log_message = f"Payment Created: {transaction.Invoice_number} - Total Amount: {payment_addition} - Discount: {new_discount} - Payment Type: {account}"
+                fnlog(request, None, 'Admin_and_Staff', log_message, "")
                 return HttpResponseRedirect(reverse('make_payment', args=[patientview_id, transaction_id]))
             else:
                 error_message = "Error making payment. Please correct the following errors:"
                 for form_errors in formset.errors:
                     for error in form_errors.values():
-                        print(error)
                         error_message += f"\n- {error}"
                 messages.error(request, error_message)
                 return HttpResponseRedirect(reverse('make_payment', args=[patientview_id, transaction_id]))
         else:
             formset = PaymentFormSet(queryset=Payment.objects.none())
-        
-        context = {
+
+        context.update({
             'formset': formset,
             'transaction': transaction,
             'payments': payments,
             'accounts': accounts,
-            'patientview_id': patientview_id
-        }
+            'patientview_id': patientview_id,
+        })
 
-        return render(request,'patient/patient_payment.html',context)
-
+        return render(request, 'patient/patient_payment.html', context)
     else:
         messages.error(request, page_deny)
         return redirect("admin")
