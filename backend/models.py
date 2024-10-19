@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import BaseUserManager
+from django.core.validators import RegexValidator
 
 class Path(models.Model):
     path_name = models.CharField(max_length=100, unique=True)
@@ -66,7 +67,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=30, unique=True)
-    Phone_number=models.BigIntegerField(null=True, blank=True)  
+    Phone_number = models.BigIntegerField(
+        validators=[RegexValidator(r'^\d{10,15}$', 'Enter a valid phone number')],
+        null=True, blank=True
+        )    
     role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
     is_staff=models.BooleanField(default=True,null=True,blank=True)
     status = models.CharField(max_length=20, default="Active", choices=(
