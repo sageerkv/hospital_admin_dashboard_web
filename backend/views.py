@@ -18,6 +18,9 @@ from collections import defaultdict
 import json
 from django.urls import reverse
 import decimal
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+
 
 def fnlog(request, effected_user, type, remarks, reason):
     created_user = request.user if request.user.is_authenticated else None
@@ -36,10 +39,17 @@ def user_login(request):
                 if user.status == "Active":
                     user.loginAttempts = 0
                     user.save()
+                    # Create JWT tokens
+                    refresh = RefreshToken.for_user(user)
+                    access_token = str(refresh.access_token)
+
+                    # Optional: Store tokens in session (or handle it in your frontend)
+                    request.session['access_token'] = access_token
+                    request.session['refresh_token'] = str(refresh)
+
                     login(request, user)
                     fnlog(request, None, 'Logged_in', '', '')
-                    print(user.role)
-                    messages.success(request,'Login successfully.')
+                    messages.success(request, 'Login successfully.')
                     return redirect("admin")
 
                 else:
@@ -73,8 +83,33 @@ def user_login(request):
 
 @login_required(login_url="login")
 def user_logout(request):
+    access_token = request.session.get('access_token')
+    
+    if access_token:
+        try:
+            # Fetch the outstanding token based on the user and access token
+            outstanding_token = OutstandingToken.objects.filter(token=access_token).first()
+            
+            if outstanding_token:
+                # Blacklist the outstanding token if it exists
+                BlacklistedToken.objects.create(token=outstanding_token)
+                # Remove the token from OutstandingToken table
+                outstanding_token.delete()
+
+        except Exception as e:
+            messages.error(request, f'Error blacklisting token: {str(e)}')
+
+    # Clear the session tokens (optional)
+    request.session.pop('access_token', None)
+    request.session.pop('refresh_token', None)
+    
+    # Log the user out using Django's session-based logout
     logout(request)
-    messages.success(request, ("Successfully logged out..."))
+    
+    # Add a success message after successful logout
+    messages.success(request, "Successfully logged out.")
+    
+    # Redirect to login page
     return redirect('login')
 
 
@@ -171,7 +206,7 @@ def index(request):
         total_amount = totals['total_paid_amount'] or 0
         account_totals[account.id] = float(total_amount)
         account_labels.append(account.Name)
-    print("---account_totals----",account_totals)
+    # print("---account_totals----",account_totals)
     context['all_patient'] = all_patient
     context['total_day_earnings'] = total_day_earnings 
     context['total_monthly_earnings'] = total_monthly_earnings 

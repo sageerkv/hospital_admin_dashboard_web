@@ -1,12 +1,16 @@
 from django.urls import path,include
 from . import views
 from django.contrib.auth.decorators import login_required
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
 
 urlpatterns = [
     # login and home
     path('', views.index, name='admin'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
     
     # profile
     path('Profile/', views.Profile, name='Profile'),
